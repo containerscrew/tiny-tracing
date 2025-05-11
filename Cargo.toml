@@ -2,6 +2,11 @@
 name = "slog-rs"
 version = "0.1.0"
 edition = "2024"
+authors = ["containerscrew info@containerscrew.com"]
+repository = "https://github.com/containerscrew/slog-rs"
+rust-version = "1.85.0"
+license-file = "LICENSE"
+description = "Simple rusty log library (tracing-subscriber wrapper)"
 
 [dependencies]
 chrono = "0.4.41"

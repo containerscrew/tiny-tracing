@@ -1,6 +1,6 @@
 <p align="center">
     <h1 align="center">slog-rs</h1>
-    <p align="center">Simple just log library for my projects (tracing-subscriber wrapper) 🦀</p>
+    <p align="center">Simple rusty log library (tracing-subscriber wrapper)🦀</p>
 </p>
 
 ---
@@ -12,7 +12,7 @@
 
 # About
 
-I needed to learn how to create a library in Rust and be able to share it with all my projects.
+A simple library, with many features still to implement, but that simplifies logging usage in my `Rust` projects.
 
 # Usage
 
