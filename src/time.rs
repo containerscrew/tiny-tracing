@@ -1,8 +1,5 @@
 use chrono::Local;
-use tracing_subscriber::fmt::{
-    format::Writer,
-    time::FormatTime,
-};
+use tracing_subscriber::fmt::{format::Writer, time::FormatTime};
 
 /// MyTimer is a custom implementation of FormatTime using chrono::Local.
 pub struct MyTimer;

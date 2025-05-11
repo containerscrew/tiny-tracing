@@ -15,9 +15,9 @@
 // ! ```
 
 pub mod config;
-pub mod time;
 pub mod errors;
+pub mod time;
 
-pub use tracing::{info, debug, warn, error, trace}; 
+pub use tracing::{debug, error, info, trace, warn};
 
 pub use config::Logger;

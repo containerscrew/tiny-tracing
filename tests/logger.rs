@@ -3,10 +3,8 @@ use slog_rs::errors::LoggerError;
 
 #[test]
 fn logger_builds_with_valid_config() {
-    let logger = Logger::new()
-        .with_level("debug")
-        .with_format("json");
-    
+    let logger = Logger::new().with_level("debug").with_format("json");
+
     assert_eq!(logger.level(), "debug");
     assert_eq!(logger.format(), "json");
 }
