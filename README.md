@@ -4,6 +4,9 @@
 </p>
 
 ---
+[![License - MIT](https://img.shields.io/github/license/containerscrew/slog-rs)](/LICENSE)
+![Crates.io Version](https://img.shields.io/crates/v/slog-rs)
+![Code Size](https://img.shields.io/github/languages/code-size/containerscrew/slog-rs)
 [![Test Pipeline](https://github.com/containerscrew/slog-rs/actions/workflows/test.yml/badge.svg)](https://github.com/containerscrew/slog-rs/actions/workflows/test.yml)
 ---
 
