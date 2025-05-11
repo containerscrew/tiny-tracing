@@ -30,10 +30,12 @@ jobs:
 
       - name: Dependencies 
         run: |
-          sudo apt update
-          sudo apt install -y gcc build-essential clang
+          sudo apt-get -y install linux-headers-$(uname -r) make gcc clang
+          rustup install stable        
+          rustup target add ${{ matrix.target }}
+          rustup component add rustfmt clippy
           rustup default stable
-  
+
       - name: Run cargo test
         run: cargo test --locked --target ${{ matrix.target }}
 
