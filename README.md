@@ -1,4 +1,13 @@
-# slog-rs
+<p align="center">
+    <h1 align="center">slog-rs</h1>
+    <p align="center">Simple just log library for my projects (tracing-subscriber wrapper) 🦀</p>
+</p>
+
+---
+[![Test Pipeline](https://github.com/containerscrew/slog-rs/actions/workflows/test.yml/badge.svg)](https://github.com/containerscrew/slog-rs/actions/workflows/test.yml)
+---
+
+# About
 
 I needed to learn how to create a library in Rust and be able to share it with all my projects.
 
