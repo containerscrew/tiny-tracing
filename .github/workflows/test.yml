@@ -28,19 +28,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Dependencies 
+      - name: Dependencies
         run: |
           sudo apt-get -y install linux-headers-$(uname -r) make gcc clang
-          rustup install stable        
+          rustup install stable
           rustup target add ${{ matrix.target }}
           rustup component add rustfmt clippy
           rustup default stable
 
       - name: Run cargo test
         run: cargo test --locked --no-default-features
-      
+
       - name: Check formatting
         run: cargo fmt --all -- --check
-      
+
       #- name: Check formatting
       #run: cargo +nightly clippy --all-features -- -D warnings
