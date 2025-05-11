@@ -66,7 +66,7 @@ impl Logger {
             .with_thread_names(false)
             .with_span_events(FmtSpan::FULL)
             .with_file(false)
-            .with_target(false)
+            .with_target(true)
             .with_timer(MyTimer);
 
         match self.format.to_lowercase().as_str() {
@@ -80,5 +80,11 @@ impl Logger {
             }
             other => Err(LoggerError::InvalidFormat(other.to_string())),
         }
+    }
+}
+
+impl Default for Logger {
+    fn default() -> Self {
+        Self::new().with_format("text").with_level("info")
     }
 }
