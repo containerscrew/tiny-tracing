@@ -17,7 +17,7 @@ A simple library, with many features still to implement, but that simplifies log
 # Usage
 
 ```shell
-cargo add slog_rs
+cargo add slog-rs
 ```
 
 ```shell
