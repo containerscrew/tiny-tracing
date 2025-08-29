@@ -11,4 +11,4 @@ description = "Simple rusty log library (tracing-subscriber wrapper)"
 [dependencies]
 chrono = "0.4.41"
 tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.19", features = ["json"] }
+tracing-subscriber = { version = "0.3.20", features = ["json"] }
