@@ -32,6 +32,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Rustup
+        run: |
+          rustup default ${{ env.RUST_VERSION }}
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: security
+
       - name: cargo-audit (RustSec advisories)
         uses: rustsec/audit-check@v2.0.0
         with:
