@@ -77,3 +77,17 @@ anywhere in the crate.
 ## License
 
 `slog-rs` is distributed under the terms of the [MIT](./LICENSE) license.
+
+## Development
+
+```bash
+git clone https://github.com/containerscrew/slog-rs.git
+cd slog-rs
+
+cargo test                                        # unit + integration + doc-tests
+cargo fmt --all -- --check                        # check formatting
+cargo clippy --all-targets --all-features -- -D warnings
+```
+
+Releases are automated via [cocogitto](https://docs.cocogitto.io/) (Conventional Commits).
+See the [release skill](.claude/skills/release/SKILL.md) for the full workflow.

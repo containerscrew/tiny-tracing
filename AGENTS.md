@@ -62,7 +62,8 @@ Run a single integration test: `cargo test --test logger <test_name>`.
 
 ## Releases
 
-New versions are cut with cocogitto:
+The full release workflow is documented in the [release skill](.claude/skills/release/SKILL.md).
+In short, new versions are cut with cocogitto:
 
 ```bash
 cog bump --auto          # auto-detects semver from commits since last tag
@@ -79,7 +80,7 @@ After `cog bump`, push the tag manually:
 
 ```bash
 git push origin main
-git push origin vX.Y.Z
+git push origin X.Y.Z
 ```
 
 Pushing a `*.*.*` tag triggers the `publish-crate` CI job which runs
