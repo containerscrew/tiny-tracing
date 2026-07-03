@@ -1,21 +1,39 @@
-// ! # slog-rs
-// !
-// ! `slog-rs` is a simple logger configuration crate for Rust,
-// ! using `tracing` and `chrono`.
-// !
-// ! # Example
-// !
-// ! ```rust
-// ! use slogrs::Logger;
-// !
-// ! Logger::new()
-// !     .with_level("debug")
-// !     .with_format("json")
-// !     .init();
-// ! ```
+//! # slog-rs
+//!
+//! A lightweight, builder-style logger for Rust projects that wraps
+//! [`tracing`] and [`tracing-subscriber`].
+//!
+//! Ideal for small to medium applications that want structured or
+//! text output with minimal ceremony.
+//!
+//! # Quick start
+//!
+//! ```rust
+//! use slog_rs::Logger;
+//!
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     Logger::new().init()?;
+//!
+//!     slog_rs::info!("Application started");
+//!     Ok(())
+//! }
+//! ```
+//!
+//! # Features
+//!
+//! - Text and JSON output formats
+//! - Environment-filter support via [`EnvFilter`](tracing_subscriber::EnvFilter)
+//!   (`"info,my_crate=debug"`, `RUST_LOG`, etc.)
+//! - Fluent builder API with sensible defaults
+//! - Safe initialisation — never panics on double-init
 
+#![deny(missing_docs)]
+
+/// Logger builder and initialisation logic.
 pub mod config;
+/// Error types returned by the library.
 pub mod errors;
+/// Custom timestamp formatter for log lines.
 pub mod time;
 
 pub use tracing::{debug, error, info, trace, warn};

@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024"
 authors = ["containerscrew info@containerscrew.com"]
 repository = "https://github.com/containerscrew/slog-rs"
-rust-version = "1.85.0"
+rust-version = "1.96.1"
 license-file = "LICENSE"
 description = "Simple rusty log library (tracing-subscriber wrapper)"
 
 [dependencies]
-chrono = "0.4.41"
-tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.20", features = ["json"] }
+chrono = "0.4.45"
+thiserror = "2.0"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter"] }
