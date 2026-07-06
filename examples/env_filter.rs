@@ -6,8 +6,7 @@
 use tiny_tracing::{Logger, debug, info, trace};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let filter =
-        std::env::var("RUST_LOG").unwrap_or_else(|_| "info,env_filter=debug".to_string());
+    let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "info,env_filter=debug".to_string());
 
     Logger::new().with_env_filter(filter).init()?;
 
