@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{errors::LoggerError, time::LocalTimer};
 use tracing::Level;
-use tracing_subscriber::{EnvFilter, fmt::format::FmtSpan};
+use tracing_subscriber::{EnvFilter, filter::LevelFilter, fmt::format::FmtSpan};
 
 /// Output format for log lines.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -93,9 +93,13 @@ impl Logger {
         }
     }
 
-    /// Sets the maximum log level.
+    /// Sets the global (default) log level.
     ///
-    /// Ignored if [`with_env_filter`](Self::with_env_filter) is also set.
+    /// This is the base level applied to every target. Per-target directives
+    /// passed to [`with_env_filter`](Self::with_env_filter) refine it on top —
+    /// the level is never silently ignored. A global directive inside the env
+    /// filter string (e.g. the `info` in `"info,my_crate=debug"`) does take
+    /// precedence over this value.
     #[must_use]
     pub fn with_level(mut self, level: Level) -> Self {
         self.level = level;
@@ -109,10 +113,11 @@ impl Logger {
         self
     }
 
-    /// Enables environment-based filtering via [`EnvFilter`].
+    /// Adds environment-based, per-target filtering via [`EnvFilter`].
     ///
-    /// When set, the filter string is used instead of the static level.
-    /// Supported syntax: `"info"`, `"info,my_crate=debug"`, etc.
+    /// The directives here are layered on top of the global
+    /// [`with_level`](Logger::with_level) value. Supported syntax: `"info"`,
+    /// `"info,my_crate=debug"`, etc.
     ///
     /// If not called, only the static [`with_level`](Logger::with_level) value applies.
     #[must_use]
@@ -162,32 +167,21 @@ impl Logger {
     ///   [`EnvFilter`] rejects it.
     /// - [`LoggerError::TryInitError`] if a global subscriber is already set.
     pub fn init(self) -> Result<(), LoggerError> {
+        let filter = EnvFilter::builder()
+            .with_default_directive(LevelFilter::from_level(self.level).into())
+            .parse(self.env_filter.as_deref().unwrap_or(""))
+            .map_err(|e| LoggerError::InvalidEnvFilter(e.to_string()))?;
+
         let base = tracing_subscriber::fmt()
             .with_thread_names(false)
-            .with_span_events(FmtSpan::FULL)
+            .with_span_events(FmtSpan::NONE)
             .with_file(self.with_file)
             .with_target(self.with_target)
             .with_timer(LocalTimer);
 
-        let env_filter = self
-            .env_filter
-            .as_deref()
-            .map(EnvFilter::try_new)
-            .transpose()
-            .map_err(|e| LoggerError::InvalidEnvFilter(e.to_string()))?;
-
         let result = match self.format {
-            LogFormat::Json => {
-                let b = base.json();
-                match env_filter {
-                    Some(f) => b.with_env_filter(f).try_init(),
-                    None => b.with_max_level(self.level).try_init(),
-                }
-            }
-            LogFormat::Text => match env_filter {
-                Some(f) => base.with_env_filter(f).try_init(),
-                None => base.with_max_level(self.level).try_init(),
-            },
+            LogFormat::Json => base.json().with_env_filter(filter).try_init(),
+            LogFormat::Text => base.with_env_filter(filter).try_init(),
         };
 
         result.map_err(|e| LoggerError::TryInitError(e.to_string()))
