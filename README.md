@@ -46,12 +46,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 The builder API exposes every knob through chainable methods:
 
 ```rust
-use tiny_tracing::Logger;
+use tiny_tracing::{Logger, LogFormat, Level};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Logger::new()
-        .with_level("debug")                       // trace | debug | info | warn | error
-        .with_format("json")                       // text | json
+        .with_level(Level::DEBUG)                  // TRACE | DEBUG | INFO | WARN | ERROR
+        .with_format(LogFormat::Json)              // Text | Json
         .with_env_filter("info,my_crate=trace")    // per-target EnvFilter
         .with_file(true)                           // show source file in log lines
         .with_target(false)                        // hide module path
@@ -62,11 +62,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 | Method | Default | Description |
 |---|---|---|
-| `with_level("debug")` | `"info"` | Static log level |
-| `with_format("json")` | `"text"` | Output format |
+| `with_level(Level::DEBUG)` | `Level::INFO` | Static log level (`tracing::Level`) |
+| `with_format(LogFormat::Json)` | `LogFormat::Text` | Output format |
 | `with_env_filter("info,my_crate=debug")` | none | Per-target filter via `EnvFilter` |
 | `with_file(true)` | `false` | Show source file path in log lines |
 | `with_target(false)` | `true` | Show module path in log lines |
+
+Need to load config from a string (env var, TOML)? `LogFormat` implements `FromStr`,
+and `tracing::Level` does too:
+
+```rust
+use tiny_tracing::{LogFormat, Level};
+
+let format: LogFormat = "json".parse()?;
+let level: Level = "debug".parse()?;
+# Ok::<_, Box<dyn std::error::Error>>(())
+```
 
 ## Safety
 

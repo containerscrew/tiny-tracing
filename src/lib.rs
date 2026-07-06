@@ -36,6 +36,6 @@ pub mod errors;
 /// Custom timestamp formatter for log lines.
 pub mod time;
 
-pub use tracing::{debug, error, info, trace, warn};
+pub use tracing::{Level, debug, error, info, trace, warn};
 
-pub use config::Logger;
+pub use config::{LogFormat, Logger};

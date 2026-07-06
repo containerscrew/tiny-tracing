@@ -1,6 +1,45 @@
+use std::str::FromStr;
+
 use crate::{errors::LoggerError, time::LocalTimer};
 use tracing::Level;
 use tracing_subscriber::{EnvFilter, fmt::format::FmtSpan};
+
+/// Output format for log lines.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LogFormat {
+    /// Human-readable single-line text output.
+    #[default]
+    Text,
+    /// One JSON object per log line.
+    Json,
+}
+
+impl LogFormat {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Text => "text",
+            Self::Json => "json",
+        }
+    }
+}
+
+impl std::fmt::Display for LogFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for LogFormat {
+    type Err = LoggerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "text" => Ok(Self::Text),
+            "json" => Ok(Self::Json),
+            other => Err(LoggerError::InvalidFormat(other.to_string())),
+        }
+    }
+}
 
 /// Builder for initializing the global tracing subscriber.
 ///
@@ -21,18 +60,18 @@ use tracing_subscriber::{EnvFilter, fmt::format::FmtSpan};
 /// JSON output with environment filter:
 ///
 /// ```rust
-/// use tiny_tracing::Logger;
+/// use tiny_tracing::{Logger, LogFormat, Level};
 ///
 /// Logger::new()
-///     .with_level("debug")
-///     .with_format("json")
+///     .with_level(Level::DEBUG)
+///     .with_format(LogFormat::Json)
 ///     .with_env_filter("info,my_crate=trace")
 ///     .init()
 ///     .unwrap();
 /// ```
 pub struct Logger {
-    level: String,
-    format: String,
+    level: Level,
+    format: LogFormat,
     env_filter: Option<String>,
     with_file: bool,
     with_target: bool,
@@ -41,34 +80,32 @@ pub struct Logger {
 impl Logger {
     /// Creates a new [`Logger`] with default values.
     ///
-    /// Defaults: `info` level, `text` format, no env filter,
+    /// Defaults: [`Level::INFO`], [`LogFormat::Text`], no env filter,
     /// file location off, target on.
     #[must_use]
     pub fn new() -> Self {
         Self {
-            level: "info".to_string(),
-            format: "text".to_string(),
+            level: Level::INFO,
+            format: LogFormat::Text,
             env_filter: None,
             with_file: false,
             with_target: true,
         }
     }
 
-    /// Sets the log level.
+    /// Sets the maximum log level.
     ///
-    /// Accepted values: `"trace"`, `"debug"`, `"info"`, `"warn"`, `"error"`.
+    /// Ignored if [`with_env_filter`](Self::with_env_filter) is also set.
     #[must_use]
-    pub fn with_level(mut self, level: &str) -> Self {
-        self.level = level.to_string();
+    pub fn with_level(mut self, level: Level) -> Self {
+        self.level = level;
         self
     }
 
     /// Sets the output format.
-    ///
-    /// Accepted values: `"text"` (default) or `"json"`.
     #[must_use]
-    pub fn with_format(mut self, format: &str) -> Self {
-        self.format = format.to_string();
+    pub fn with_format(mut self, format: LogFormat) -> Self {
+        self.format = format;
         self
     }
 
@@ -79,8 +116,8 @@ impl Logger {
     ///
     /// If not called, only the static [`with_level`](Logger::with_level) value applies.
     #[must_use]
-    pub fn with_env_filter(mut self, filter: &str) -> Self {
-        self.env_filter = Some(filter.to_string());
+    pub fn with_env_filter(mut self, filter: impl Into<String>) -> Self {
+        self.env_filter = Some(filter.into());
         self
     }
 
@@ -104,14 +141,14 @@ impl Logger {
 
     /// Returns the configured log level.
     #[must_use]
-    pub fn level(&self) -> &str {
-        &self.level
+    pub fn level(&self) -> Level {
+        self.level
     }
 
     /// Returns the configured output format.
     #[must_use]
-    pub fn format(&self) -> &str {
-        &self.format
+    pub fn format(&self) -> LogFormat {
+        self.format
     }
 
     /// Initializes the global tracing subscriber.
@@ -121,19 +158,10 @@ impl Logger {
     ///
     /// # Errors
     ///
-    /// - [`LoggerError::InvalidLevel`] if the level string is unrecognised.
-    /// - [`LoggerError::InvalidFormat`] if the format string is unrecognised.
+    /// - [`LoggerError::InvalidEnvFilter`] if an env filter was set and
+    ///   [`EnvFilter`] rejects it.
     /// - [`LoggerError::TryInitError`] if a global subscriber is already set.
     pub fn init(self) -> Result<(), LoggerError> {
-        let level = match self.level.to_lowercase().as_str() {
-            "trace" => Level::TRACE,
-            "debug" => Level::DEBUG,
-            "info" => Level::INFO,
-            "warn" => Level::WARN,
-            "error" => Level::ERROR,
-            other => return Err(LoggerError::InvalidLevel(other.to_string())),
-        };
-
         let base = tracing_subscriber::fmt()
             .with_thread_names(false)
             .with_span_events(FmtSpan::FULL)
@@ -141,36 +169,28 @@ impl Logger {
             .with_target(self.with_target)
             .with_timer(LocalTimer);
 
-        match self.format.to_lowercase().as_str() {
-            "json" => {
-                let base = base.json();
-                if let Some(filter) = &self.env_filter {
-                    let env_filter = EnvFilter::try_new(filter)
-                        .map_err(|e| LoggerError::InvalidLevel(e.to_string()))?;
-                    base.with_env_filter(env_filter)
-                        .try_init()
-                        .map_err(|e| LoggerError::TryInitError(e.to_string()))
-                } else {
-                    base.with_max_level(level)
-                        .try_init()
-                        .map_err(|e| LoggerError::TryInitError(e.to_string()))
+        let env_filter = self
+            .env_filter
+            .as_deref()
+            .map(EnvFilter::try_new)
+            .transpose()
+            .map_err(|e| LoggerError::InvalidEnvFilter(e.to_string()))?;
+
+        let result = match self.format {
+            LogFormat::Json => {
+                let b = base.json();
+                match env_filter {
+                    Some(f) => b.with_env_filter(f).try_init(),
+                    None => b.with_max_level(self.level).try_init(),
                 }
             }
-            "text" => {
-                if let Some(filter) = &self.env_filter {
-                    let env_filter = EnvFilter::try_new(filter)
-                        .map_err(|e| LoggerError::InvalidLevel(e.to_string()))?;
-                    base.with_env_filter(env_filter)
-                        .try_init()
-                        .map_err(|e| LoggerError::TryInitError(e.to_string()))
-                } else {
-                    base.with_max_level(level)
-                        .try_init()
-                        .map_err(|e| LoggerError::TryInitError(e.to_string()))
-                }
-            }
-            other => Err(LoggerError::InvalidFormat(other.to_string())),
-        }
+            LogFormat::Text => match env_filter {
+                Some(f) => base.with_env_filter(f).try_init(),
+                None => base.with_max_level(self.level).try_init(),
+            },
+        };
+
+        result.map_err(|e| LoggerError::TryInitError(e.to_string()))
     }
 }
 
