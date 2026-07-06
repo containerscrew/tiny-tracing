@@ -12,16 +12,16 @@ use tracing_subscriber::{EnvFilter, fmt::format::FmtSpan};
 /// Minimal setup (text output at INFO level):
 ///
 /// ```rust
-/// use slog_rs::Logger;
+/// use tiny_tracing::Logger;
 ///
 /// Logger::new().init().unwrap();
-/// slog_rs::info!("Ready");
+/// tiny_tracing::info!("Ready");
 /// ```
 ///
 /// JSON output with environment filter:
 ///
 /// ```rust
-/// use slog_rs::Logger;
+/// use tiny_tracing::Logger;
 ///
 /// Logger::new()
 ///     .with_level("debug")

@@ -6,7 +6,7 @@ beyond a quick reference belongs in a dedicated doc and should be linked from he
 
 ## Project
 
-`slog-rs` is a lightweight, builder-style Rust logging library that wraps
+`tiny-tracing` is a lightweight, builder-style Rust logging library that wraps
 [`tracing`](https://crates.io/crates/tracing) and
 [`tracing-subscriber`](https://crates.io/crates/tracing-subscriber). It provides a
 fluent API to configure and initialise the global tracing subscriber with text or

@@ -1,11 +1,11 @@
 ---
 name: release
-description: Cut the next release of slog-rs. Triggers when the user asks to "release", "cut a release", "bump version", "generate the next release", or similar. Reads the latest git tag, verifies it matches Cargo.toml, proposes the next version from conventional commits since the tag, then runs `cog bump --version` which handles Cargo.toml, Cargo.lock, CHANGELOG.md, and the bump commit + tag in one step.
+description: Cut the next release of tiny-tracing. Triggers when the user asks to "release", "cut a release", "bump version", "generate the next release", or similar. Reads the latest git tag, verifies it matches Cargo.toml, proposes the next version from conventional commits since the tag, then runs `cog bump --version` which handles Cargo.toml, Cargo.lock, CHANGELOG.md, and the bump commit + tag in one step.
 ---
 
 # Release process
 
-Use this workflow whenever the user asks to release a new version of `slog-rs`.
+Use this workflow whenever the user asks to release a new version of `tiny-tracing`.
 
 ## How automation works
 
@@ -18,7 +18,7 @@ The heavy lifting is done by `cog bump --version X.Y.Z` (cocogitto), which is wi
 2. Cocogitto creates the bump commit `chore(version): X.Y.Z` with all of the above.
 3. Cocogitto creates the tag `X.Y.Z`.
 
-`slog-rs` does **not** auto-push (post_bump_hooks is empty). After the bump, you must push manually:
+`tiny-tracing` does **not** auto-push (post_bump_hooks is empty). After the bump, you must push manually:
 
 ```bash
 git push origin main

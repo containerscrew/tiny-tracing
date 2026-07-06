@@ -1,5 +1,5 @@
-use slog_rs::config::Logger;
-use slog_rs::errors::LoggerError;
+use tiny_tracing::config::Logger;
+use tiny_tracing::errors::LoggerError;
 
 #[test]
 fn new_should_return_default_values() {

@@ -27,7 +27,7 @@ allow = [
 ]
 confidence-threshold = 0.8
 exceptions = [
-    { allow = ["MIT"], name = "slog-rs" },
+    { allow = ["MIT"], name = "tiny-tracing" },
 ]
 
 [bans]

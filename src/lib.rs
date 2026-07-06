@@ -1,4 +1,4 @@
-//! # slog-rs
+//! # tiny-tracing
 //!
 //! A lightweight, builder-style logger for Rust projects that wraps
 //! [`tracing`] and [`tracing-subscriber`].
@@ -9,12 +9,12 @@
 //! # Quick start
 //!
 //! ```rust
-//! use slog_rs::Logger;
+//! use tiny_tracing::Logger;
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     Logger::new().init()?;
 //!
-//!     slog_rs::info!("Application started");
+//!     tiny_tracing::info!("Application started");
 //!     Ok(())
 //! }
 //! ```
