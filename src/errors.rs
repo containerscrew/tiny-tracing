@@ -13,6 +13,14 @@ pub enum LoggerError {
     /// [`EnvFilter`](tracing_subscriber::EnvFilter).
     #[error("Invalid env filter: '{0}'.")]
     InvalidEnvFilter(String),
+    /// The log file could not be opened for writing.
+    #[error("Could not open log file '{path}': {message}")]
+    OpenLogFile {
+        /// Path that failed to open.
+        path: String,
+        /// Underlying I/O error message.
+        message: String,
+    },
     /// A global tracing subscriber is already set (double-init).
     #[error("Failed to initialize subscriber: {0}")]
     TryInitError(String),

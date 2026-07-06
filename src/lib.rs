@@ -22,6 +22,7 @@
 //! # Features
 //!
 //! - Text and JSON output formats
+//! - Output to stdout, a file, or both
 //! - Environment-filter support via [`EnvFilter`](tracing_subscriber::EnvFilter)
 //!   (`"info,my_crate=debug"`, `RUST_LOG`, etc.)
 //! - Fluent builder API with sensible defaults
@@ -38,4 +39,4 @@ pub mod time;
 
 pub use tracing::{Level, debug, error, info, trace, warn};
 
-pub use config::{LogFormat, Logger};
+pub use config::{LogFormat, Logger, Output};

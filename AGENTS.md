@@ -10,19 +10,22 @@ beyond a quick reference belongs in a dedicated doc and should be linked from he
 [`tracing`](https://crates.io/crates/tracing) and
 [`tracing-subscriber`](https://crates.io/crates/tracing-subscriber). It provides a
 fluent API to configure and initialise the global tracing subscriber with text or
-JSON output, optional `EnvFilter` support, and safe initialisation (no panics on
-double-init).
+JSON output, optional `EnvFilter` support, output to stdout/file/both, and safe
+initialisation (no panics on double-init).
 
 Source layout:
 
 - `src/lib.rs` — crate root, re-exports `tracing` macros (`info!`, `warn!`, …) and
-  `config::Logger`.
-- `src/config.rs` — `Logger` builder: level, format, env filter, file/target flags,
-  and `init()` that calls `try_init()` under the hood.
-- `src/errors.rs` — `LoggerError` enum (`InvalidLevel`, `InvalidFormat`, `TryInitError`)
-  derived with `thiserror::Error`.
+  `config::{Logger, LogFormat, Output}`.
+- `src/config.rs` — `Logger` builder (level, format, env filter, file/target flags,
+  output destination) plus the `LogFormat` and `Output` enums, and `init()` which
+  composes `fmt` layers on a `Registry` and calls `try_init()`.
+- `src/errors.rs` — `LoggerError` enum (`InvalidFormat`, `InvalidEnvFilter`,
+  `OpenLogFile`, `TryInitError`) derived with `thiserror::Error`.
 - `src/time.rs` — `LocalTimer`, a `FormatTime` impl that uses `chrono::Local`.
 - `tests/logger.rs` — integration tests for builder config and `init()` behaviour.
+- `tests/file_output.rs` — integration tests for file output and open failures.
+- `examples/` — runnable examples (`basic`, `json`, `env_filter`, `file`).
 
 ## Setup & common commands
 

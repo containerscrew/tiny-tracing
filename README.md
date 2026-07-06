@@ -47,15 +47,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 The builder API exposes every knob through chainable methods:
 
 ```rust
-use tiny_tracing::{Logger, LogFormat, Level};
+use tiny_tracing::{Logger, LogFormat, Level, Output};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Logger::new()
         .with_level(Level::DEBUG)                  // TRACE | DEBUG | INFO | WARN | ERROR
         .with_format(LogFormat::Json)              // Text | Json
-        .with_env_filter("info,my_crate=trace")    // per-target EnvFilter
+        .with_env_filter("info,my_crate=trace")    // per-target EnvFilter, on top of level
         .with_file(true)                           // show source file in log lines
         .with_target(false)                        // hide module path
+        .with_output(Output::Both("app.log".into())) // stdout + file
         .init()?;
     Ok(())
 }
@@ -63,11 +64,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 | Method | Default | Description |
 |---|---|---|
-| `with_level(Level::DEBUG)` | `Level::INFO` | Static log level (`tracing::Level`) |
+| `with_level(Level::DEBUG)` | `Level::INFO` | Global log level (`tracing::Level`); `with_env_filter` refines it per-target |
 | `with_format(LogFormat::Json)` | `LogFormat::Text` | Output format |
-| `with_env_filter("info,my_crate=debug")` | none | Per-target filter via `EnvFilter` |
+| `with_env_filter("info,my_crate=debug")` | none | Per-target filter via `EnvFilter`, layered on the level |
 | `with_file(true)` | `false` | Show source file path in log lines |
 | `with_target(false)` | `true` | Show module path in log lines |
+| `with_output(Output::Both("app.log".into()))` | `Output::Stdout` | Write to stdout, a file, or both |
+
+### Output destinations
+
+`with_output` takes an `Output`: `Stdout` (default), `File(path)`, or `Both(path)`.
+File output is opened in append mode (created if missing) with synchronised,
+blocking writes — no background thread, no guard to keep alive. ANSI colours are
+kept on stdout but stripped from the file, so the on-disk log stays clean.
 
 Need to load config from a string (env var, TOML)? `LogFormat` implements `FromStr`,
 and `tracing::Level` does too:
@@ -88,6 +97,7 @@ Runnable examples live under [`examples/`](./examples):
 cargo run --example basic       # text output at INFO
 cargo run --example json        # JSON output at DEBUG, with file locations
 cargo run --example env_filter  # per-target filter (respects RUST_LOG)
+cargo run --example file        # write to stdout + a file at once
 ```
 
 ## Safety
