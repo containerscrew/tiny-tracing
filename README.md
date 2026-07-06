@@ -8,6 +8,7 @@ plain-text output with zero fuss.
     <a href="https://github.com/containerscrew/tiny-tracing/actions/workflows/test.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/containerscrew/tiny-tracing/test.yml?branch=main&label=CI"></a>
     <a href="./CHANGELOG.md"><img alt="Changelog" src="https://img.shields.io/badge/changelog-md-blue"></a>
     <a href="https://crates.io/crates/tiny-tracing"><img alt="Crates.io Version" src="https://img.shields.io/crates/v/tiny-tracing"></a>
+    <a href="https://docs.rs/tiny-tracing"><img alt="docs.rs" src="https://img.shields.io/docsrs/tiny-tracing"></a>
     <img alt="Crates.io Total Downloads" src="https://img.shields.io/crates/d/tiny-tracing?label=crates.io%20downloads">
     <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/containerscrew/tiny-tracing">
     <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/containerscrew/tiny-tracing">
@@ -77,6 +78,16 @@ use tiny_tracing::{LogFormat, Level};
 let format: LogFormat = "json".parse()?;
 let level: Level = "debug".parse()?;
 # Ok::<_, Box<dyn std::error::Error>>(())
+```
+
+## Examples
+
+Runnable examples live under [`examples/`](./examples):
+
+```bash
+cargo run --example basic       # text output at INFO
+cargo run --example json        # JSON output at DEBUG, with file locations
+cargo run --example env_filter  # per-target filter (respects RUST_LOG)
 ```
 
 ## Safety
