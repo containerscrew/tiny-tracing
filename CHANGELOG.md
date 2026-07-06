@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2026-07-06
+#### Features
+- (**config**) add stdout, file, and combined output destinations - (6fc1243) - containerscrew
+#### Bug Fixes
+- (**config**) compose level with env_filter and quiet span events by default - (c91c002) - containerscrew
+
+- - -
+
 ## 0.1.0 - 2026-07-06
 #### Features
 - rewrite library with safe init, env-filter, and full CI pipeline - (5a031eb) - containerscrew
