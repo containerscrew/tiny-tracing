@@ -61,7 +61,21 @@ which cog && which cargo-set-version    # tools must be present
   remove them in a `chore` commit *before* the bump — a bumped tag will ship whatever
   is in the tree.
 
-### 2. Propose the next version
+### 2. Quality gate — lint and fmt MUST pass
+
+Before proposing a version, run and require green:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test
+```
+
+If any of these fail, STOP. Fix the issue and commit it *before* the bump — the
+tagged commit is what CI publishes, so a broken commit here means a failed publish
+job and an orphaned tag on crates.io policy. Do not skip or defer.
+
+### 3. Propose the next version
 
 List conventional commits since the latest tag:
 
@@ -77,7 +91,7 @@ Categorize them and suggest a bump:
 
 Show the user the commit list and the suggested next version. Wait for confirmation.
 
-### 3. Run the bump
+### 4. Run the bump
 
 ```bash
 cog bump --version X.Y.Z
@@ -86,14 +100,14 @@ cog bump --version X.Y.Z
 This single command handles everything: Cargo.toml, Cargo.lock, CHANGELOG.md, the
 bump commit, and the tag.
 
-### 4. Push
+### 5. Push
 
 ```bash
 git push origin main
 git push origin X.Y.Z
 ```
 
-### 5. Verify
+### 6. Verify
 
 ```bash
 git describe --tags --abbrev=0          # should equal X.Y.Z
@@ -102,7 +116,7 @@ git status                              # must be clean
 git ls-remote --tags origin X.Y.Z       # must show the tag on remote
 ```
 
-### 6. Report back
+### 7. Report back
 
 Tell the user:
 - The new version and tag
