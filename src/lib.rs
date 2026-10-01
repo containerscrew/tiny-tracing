@@ -34,8 +34,6 @@
 pub mod config;
 /// Error types returned by the library.
 pub mod errors;
-/// Custom timestamp formatter for log lines.
-pub mod time;
 
 pub use tracing::{Level, debug, error, info, trace, warn};
 

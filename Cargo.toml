@@ -12,7 +12,6 @@ keywords = ["logging", "tracing", "tracing-subscriber", "logger"]
 categories = ["development-tools::debugging"]
 
 [dependencies]
-chrono = "0.4.45"
 thiserror = "2.0"
 tracing = "0.1.44"
-tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter"] }
+tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter", "fmt", "std", "time"] }

@@ -1,10 +1,12 @@
 use std::fs::{File, OpenOptions};
+use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Mutex;
 
-use crate::{errors::LoggerError, time::LocalTimer};
+use crate::errors::LoggerError;
 use tracing::Level;
+use tracing_subscriber::fmt::time::UtcTime;
 use tracing_subscriber::{
     EnvFilter, Layer, Registry,
     filter::LevelFilter,
@@ -100,6 +102,7 @@ pub struct Logger {
     with_file: bool,
     with_target: bool,
     output: Output,
+    colored: Option<bool>,
 }
 
 impl Logger {
@@ -116,6 +119,7 @@ impl Logger {
             with_file: false,
             with_target: true,
             output: Output::Stdout,
+            colored: None,
         }
     }
 
@@ -136,6 +140,16 @@ impl Logger {
     #[must_use]
     pub fn with_format(mut self, format: LogFormat) -> Self {
         self.format = format;
+        self
+    }
+
+    /// Forces ANSI colours on or off for stdout.
+    ///
+    /// By default colours are chosen automatically (on only when stdout is a
+    /// terminal). File output is never coloured, regardless of this setting.
+    #[must_use]
+    pub fn colored(mut self, colored: bool) -> Self {
+        self.colored = Some(colored);
         self
     }
 
@@ -221,7 +235,10 @@ impl Logger {
         let mut layers: Vec<Box<dyn Layer<Registry> + Send + Sync>> = Vec::new();
 
         if to_stdout {
-            layers.push(self.fmt_layer(std::io::stdout, true));
+            let ansi = self
+                .colored
+                .unwrap_or_else(|| std::io::stdout().is_terminal());
+            layers.push(self.fmt_layer(std::io::stdout, ansi));
         }
 
         if let Some(path) = file_path {
@@ -250,7 +267,7 @@ impl Logger {
             .with_span_events(FmtSpan::NONE)
             .with_file(self.with_file)
             .with_target(self.with_target)
-            .with_timer(LocalTimer);
+            .with_timer(UtcTime::rfc_3339());
 
         match self.format {
             LogFormat::Json => layer.json().boxed(),
