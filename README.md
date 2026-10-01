@@ -21,6 +21,11 @@ plain-text output with zero fuss.
 
 ---
 
+> [!NOTE]
+> AI coding assistants are used in this project mainly for best-practice and design
+> guidance (through the [agent skills](#agent-skills) listed below), to keep the library
+> as simple and productive as possible, and above all to document its functions.
+
 ## Quickstart
 
 Add the crate to your project:
@@ -57,6 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_file(true)                           // show source file in log lines
         .with_target(false)                        // hide module path
         .with_output(Output::Both("app.log".into())) // stdout + file
+        .colored(false)                            // force ANSI colours off (default: auto)
         .init()?;
     Ok(())
 }
@@ -70,13 +76,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 | `with_file(true)` | `false` | Show source file path in log lines |
 | `with_target(false)` | `true` | Show module path in log lines |
 | `with_output(Output::Both("app.log".into()))` | `Output::Stdout` | Write to stdout, a file, or both |
+| `colored(false)` | auto | Force ANSI colours on or off for stdout; by default they are on only when stdout is a terminal |
 
 ### Output destinations
 
 `with_output` takes an `Output`: `Stdout` (default), `File(path)`, or `Both(path)`.
 File output is opened in append mode (created if missing) with synchronised,
-blocking writes — no background thread, no guard to keep alive. ANSI colours are
-kept on stdout but stripped from the file, so the on-disk log stays clean.
+blocking writes — no background thread, no guard to keep alive.
+
+### Colours
+
+By default ANSI colours are used only when stdout is a terminal, so piped output,
+Docker and CI logs stay free of escape codes. Call `colored(true)` or `colored(false)`
+to override that. File output is never coloured, whatever you choose. The `NO_COLOR`
+environment variable is not read; use `colored(false)` if you want to honour it
+yourself.
+
+### Timestamps
+
+Every log line carries an RFC 3339 timestamp in UTC (for example
+`2026-10-01T12:00:00.123456Z`), in both text and JSON output.
 
 Need to load config from a string (env var, TOML)? `LogFormat` implements `FromStr`,
 and `tracing::Level` does too:
@@ -98,6 +117,7 @@ cargo run --example basic       # text output at INFO
 cargo run --example json        # JSON output at DEBUG, with file locations
 cargo run --example env_filter  # per-target filter (respects RUST_LOG)
 cargo run --example file        # write to stdout + a file at once
+cargo run --example colored     # force ANSI colours off
 ```
 
 ## Limitations

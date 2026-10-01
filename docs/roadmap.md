@@ -7,52 +7,55 @@ Because several of them change behaviour or public API, ship them together as a
 
 ## Production issues
 
-### 1. ANSI colours are always on for stdout
+### 1. ANSI colours are always on for stdout — code done, tests and docs pending
 
-**Where:** `Logger::init` in `src/config.rs` builds the stdout layer with
-`fmt_layer(std::io::stdout, true)`, so `ansi` is hardcoded to `true`.
+**Problem:** `Logger::init` used to hardcode `ansi = true` for stdout, so when stdout is
+not a terminal (a pipe, `> file`, Docker/journald, CI logs) the text output still
+contained escape codes.
 
-**Problem:** when stdout is not a terminal (a pipe, `> file`, Docker/journald, CI logs)
-the text output still contains escape codes.
+**Decision taken:** `Logger` stores `colored: Option<bool>`. `None` (the default) means
+automatic: colours only when stdout is a terminal (`std::io::IsTerminal`).
+`.colored(true|false)` forces it either way. File output is never coloured.
+`NO_COLOR` is deliberately **not** read; the docs must say so.
 
-**Goal:** enable colours only when stdout is a TTY and `NO_COLOR` is not set.
+**Still to do:**
+- Extract the decision into a small pure function, for example
+  `fn use_ansi(colored: Option<bool>, is_terminal: bool) -> bool`, and unit-test the
+  three cases (`None` with and without a terminal, `Some(true)`, `Some(false)`). The
+  global subscriber can only be set once per process, so testing through `init()` is
+  awkward.
+- Run `cargo fmt --all` before committing.
+- Optionally mention the colour behaviour in the crate docs (`src/lib.rs` feature list).
 
-**Hints:**
-- `std::io::IsTerminal` is in the standard library; no new dependency needed.
-- Decide the precedence between TTY detection and `NO_COLOR` (the
-  [NO_COLOR](https://no-color.org) convention: any non-empty value disables colour).
-- Keep file output colour-free, as it is today.
+Docs (`README.md`, `AGENTS.md`) are already updated.
 
-**Done when:** tests cover colour on/off, and the README states when colours are used.
+### 2. Ambiguous timestamps — code done, tests and docs pending
 
-### 2. Ambiguous timestamps
+**Problem:** `LocalTimer` formatted `%Y-%m-%d %H:%M:%S` in local time, with no UTC offset
+and no sub-second precision. In JSON output, which is what log aggregators (Loki,
+Datadog, CloudWatch, …) ingest, this is ambiguous and hard to correlate across hosts.
 
-**Where:** `LocalTimer` in `src/time.rs` formats `%Y-%m-%d %H:%M:%S` in local time.
+**Decision taken:** always UTC, RFC 3339, using `tracing_subscriber`'s
+`UtcTime::rfc_3339()` (the `time` feature). `chrono`, `LocalTimer` and `pub mod time` were
+removed, which is a breaking change.
 
-**Problem:** no UTC offset and no sub-second precision. In JSON output, which is what
-log aggregators (Loki, Datadog, CloudWatch, …) ingest, this is ambiguous and hard to
-correlate across hosts.
+**Still to do:**
+- Add `tests/timestamp.rs` (its own file, so it gets its own process and its own global
+  subscriber). Log to a temp file, as `tests/file_output.rs` does, and assert the
+  timestamp looks like `YYYY-MM-DDTHH:MM:SS.ffffffZ` (UTC, RFC 3339) in both text and
+  JSON output.
+- Optionally mention in the crate docs (`src/lib.rs`) that timestamps are UTC.
 
-**Goal:** emit RFC 3339 timestamps that carry the offset (or are in UTC).
-
-**Open decision:** UTC always, or local time with offset? Either way, JSON should be
-unambiguous.
-
-**Hints:**
-- `tracing-subscriber` has a `chrono` feature with `ChronoUtc` and `ChronoLocal`
-  timers; using them could make `LocalTimer` unnecessary.
-- `pub mod time` is public API, so removing or changing `LocalTimer` is a breaking
-  change — another reason to do it in `0.3.0`.
-
-**Done when:** a test asserts the timestamp format in both text and JSON output.
+Docs (`README.md`, `AGENTS.md`) are already updated.
 
 ## Cheap improvements
 
 ### 3. `Output::Stderr`
 
 CLI tools usually log to stderr so stdout stays free for program output. Add an
-`Output::Stderr` variant and handle it in `Logger::init` (apply the same TTY/`NO_COLOR`
-rule as stdout, checking stderr instead). Update the `Output` docs and the README.
+`Output::Stderr` variant and handle it in `Logger::init`. The automatic colour decision
+must check whether **stderr** is a terminal, not stdout. Update the `Output` docs, the
+`colored` doc comment (it says "stdout") and the README.
 
 ### 4. Read the filter from the environment
 
@@ -90,6 +93,9 @@ use `tracing-subscriber` directly:
 
 - `cargo test`, `cargo clippy --all-targets --all-features -- -D warnings`,
   `cargo fmt --all -- --check`.
+- `cargo deny check` (the `time` dependency tree is new since `chrono` was dropped).
 - Sweep `README.md`, `AGENTS.md` and crate docs for drift (see `AGENTS.md`).
-- Release with `cog bump` as described in the
+- Commit the breaking changes with a `!` type (`feat!:`) or a `BREAKING CHANGE:` footer.
+- Release with the explicit `cog bump --version 0.3.0` rather than `--auto`, since
+  cocogitto may treat a breaking change as a major bump. See the
   [release skill](../.claude/skills/release/SKILL.md).
