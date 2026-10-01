@@ -123,3 +123,17 @@ cargo clippy --all-targets --all-features -- -D warnings
 
 Releases are automated via [cocogitto](https://docs.cocogitto.io/) (Conventional Commits).
 See the [release skill](.claude/skills/release/SKILL.md) for the full workflow.
+
+### Agent skills
+
+AI coding agents working on this repo use these third-party skills (installed under
+`.claude/skills/`, pinned in [`skills-lock.json`](./skills-lock.json)):
+
+```bash
+npx skills add trailofbits/skills@cargo-fuzz               # fuzzing Rust code with cargo-fuzz
+npx skills add apollographql/skills@rust-best-practices    # idiomatic Rust guidelines
+npx skills add openai/skills@security-ownership-map        # security-oriented ownership / bus-factor analysis
+npx skills add vercel-labs/skills@find-skills              # discover and install other skills
+```
+
+The `release` skill is specific to this repo and not installed from anywhere.
