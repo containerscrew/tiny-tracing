@@ -100,6 +100,24 @@ cargo run --example env_filter  # per-target filter (respects RUST_LOG)
 cargo run --example file        # write to stdout + a file at once
 ```
 
+## Limitations
+
+`tiny-tracing` is deliberately a thin wrapper, so some things are left out on purpose:
+
+- **File writes are blocking.** Each log line is written synchronously under a mutex,
+  with no background thread. That is fine for small and medium workloads, but heavy
+  logging from many threads or from async tasks can contend on the lock. If you need
+  non-blocking writes, use [`tracing-appender`](https://crates.io/crates/tracing-appender)
+  with `tracing-subscriber` directly.
+- **No file rotation.** The log file is only ever appended to and grows without bound.
+  Rotate it externally (for example with `logrotate`) or use
+  [`tracing-appender`](https://crates.io/crates/tracing-appender)'s rolling files.
+- **In containers, log to stdout.** In Docker, Kubernetes or systemd, keep the default
+  `Output::Stdout` and let the platform collect and rotate the logs, rather than writing
+  files inside the container.
+
+Planned improvements are tracked in [`docs/roadmap.md`](./docs/roadmap.md).
+
 ## Safety
 
 The library calls `tracing_subscriber::try_init()` internally — calling `init()` more

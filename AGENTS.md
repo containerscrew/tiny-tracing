@@ -26,6 +26,8 @@ Source layout:
 - `tests/logger.rs` — integration tests for builder config and `init()` behaviour.
 - `tests/file_output.rs` — integration tests for file output and open failures.
 - `examples/` — runnable examples (`basic`, `json`, `env_filter`, `file`).
+- `docs/roadmap.md` — planned improvements, written for the maintainer to implement
+  by hand. Do not implement roadmap items unless asked.
 
 ## Setup & common commands
 
