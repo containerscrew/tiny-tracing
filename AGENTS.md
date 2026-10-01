@@ -98,6 +98,10 @@ runs weekly on a cron (`0 7 * * 1`) to surface new advisories.
 `cargo-deny` policy lives in `deny.toml` — keep advisories at `version = 2` and only
 permissive licenses allowed. The project itself is MIT-licensed.
 
+`.github/dependabot.yml` opens weekly grouped PRs for `cargo` and `github-actions`;
+they are reviewed and merged by hand (no auto-merge). Vulnerability reports go through
+GitHub private reporting, as described in `SECURITY.md`.
+
 ## Things to avoid
 
 - Never add `Co-Authored-By` trailers, "Generated with…" lines, or any other AI-agent

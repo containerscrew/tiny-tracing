@@ -106,6 +106,8 @@ The library calls `tracing_subscriber::try_init()` internally — calling `init(
 than once returns a `LoggerError::TryInitError` instead of panicking. No `unsafe` code
 anywhere in the crate.
 
+To report a vulnerability, see the [security policy](./SECURITY.md).
+
 ## License
 
 `tiny-tracing` is distributed under the terms of the [MIT](./LICENSE) license.
