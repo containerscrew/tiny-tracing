@@ -5,7 +5,7 @@ A lightweight, builder-style logging library for Rust that wraps `tracing` and
 plain-text output with zero fuss.
 
 <p align="center">
-    <a href="https://github.com/containerscrew/tiny-tracing/actions/workflows/test.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/containerscrew/tiny-tracing/test.yml?branch=main&label=CI"></a>
+    <a href="https://github.com/containerscrew/tiny-tracing/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/containerscrew/tiny-tracing/ci.yml?branch=main&label=CI"></a>
     <a href="./CHANGELOG.md"><img alt="Changelog" src="https://img.shields.io/badge/changelog-md-blue"></a>
     <a href="https://crates.io/crates/tiny-tracing"><img alt="Crates.io Version" src="https://img.shields.io/crates/v/tiny-tracing"></a>
     <a href="https://docs.rs/tiny-tracing"><img alt="docs.rs" src="https://img.shields.io/docsrs/tiny-tracing"></a>
