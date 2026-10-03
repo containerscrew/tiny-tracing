@@ -16,7 +16,7 @@ plain-text output with zero fuss.
     <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/containerscrew/tiny-tracing">
     <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/containerscrew/tiny-tracing?style=social">
     <img alt="License" src="https://img.shields.io/badge/License-MIT-blue.svg">
-    <img alt="MSRV" src="https://img.shields.io/badge/MSRV-1.96.1-orange">
+    <img alt="MSRV" src="https://img.shields.io/badge/MSRV-1.88-orange">
 </p>
 
 ---

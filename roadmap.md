@@ -53,14 +53,6 @@ later (such as `Output::Stderr`) is not a breaking change for users who `match` 
 Do this in the same release as item 3. Adding it is itself breaking, which is fine in
 `0.x`.
 
-### 6. Lower the MSRV
-
-`rust-version` in `Cargo.toml` is set to the latest stable toolchain (the same one pinned
-in `rust-toolchain.toml`), which forces every user to be on it. Edition 2024 already
-sets a floor of 1.85. Measure the real minimum with `cargo-msrv`, set `rust-version` to
-it, and keep the CI toolchain independent. Remember to update the MSRV badge in the
-README and add an MSRV job to CI.
-
 ## Not planned
 
 These would add complexity beyond the goal of a thin wrapper. Users who need them should
