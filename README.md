@@ -151,6 +151,10 @@ cargo run --example stderr      # log to stderr, keep stdout for program output
   logging from many threads or from async tasks can contend on the lock. If you need
   non-blocking writes, use [`tracing-appender`](https://crates.io/crates/tracing-appender)
   with `tracing-subscriber` directly.
+- **Stdout and stderr writes are synchronous too.** Each log line is written on the
+  calling thread, which waits until the write finishes. That is fine at normal log
+  volumes, but a slow consumer (a full pipe, a stalled log shipper) can stall the
+  application. There is no non-blocking option for these streams.
 - **No file rotation.** The log file is only ever appended to and grows without bound.
   Rotate it externally (for example with `logrotate`) or use
   [`tracing-appender`](https://crates.io/crates/tracing-appender)'s rolling files.

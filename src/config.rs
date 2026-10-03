@@ -242,6 +242,9 @@ impl Logger {
     /// append mode (created if missing) and writes are synchronised, so the
     /// call stays panic-free — an unopenable path yields
     /// [`LoggerError::OpenLogFile`] from [`init`](Self::init).
+    ///
+    /// Writes to stdout and stderr are synchronous: each log line is written on
+    /// the calling thread, which waits until the write finishes.
     #[must_use]
     pub fn with_output(mut self, output: Output) -> Self {
         self.output = output;
