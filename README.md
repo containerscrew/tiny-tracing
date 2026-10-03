@@ -1,8 +1,10 @@
-# tiny-tracing
+<h1 align="center">tiny-tracing</h1>
 
-A lightweight, builder-style logging library for Rust that wraps `tracing` and
-`tracing-subscriber`. Designed for small to medium projects that want structured or
-plain-text output with zero fuss.
+<p align="center">
+    A lightweight, builder-style logging library for Rust that wraps <code>tracing</code> and
+    <code>tracing-subscriber</code>. Designed for small to medium projects that want structured or
+    plain-text output with zero fuss.
+</p>
 
 <p align="center">
     <a href="https://github.com/containerscrew/tiny-tracing/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/containerscrew/tiny-tracing/ci.yml?branch=main&label=CI"></a>
