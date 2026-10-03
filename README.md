@@ -37,12 +37,12 @@ cargo add tiny-tracing
 Minimal setup — text output at INFO level, nothing else needed:
 
 ```rust
-use tiny_tracing::Logger;
+use tiny_tracing::{Logger, info};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     Logger::new().init()?;
 
-    tiny_tracing::info!("Application started");
+    info!("hello from tiny-tracing");
     Ok(())
 }
 ```
@@ -70,17 +70,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-| Method | Default | Description |
-|---|---|---|
-| `with_level(Level::DEBUG)` | `Level::INFO` | Global log level (`tracing::Level`); `with_env_filter` refines it per-target |
-| `with_format(LogFormat::Json)` | `LogFormat::Text` | Output format |
-| `with_env_filter("info,my_crate=debug")` | none | Per-target filter via `EnvFilter`, layered on the level |
-| `with_env_filter_from_env()` | none | Reads the filter from `RUST_LOG`; if it is unset, only the level applies |
-| `with_file(true)` | `false` | Show source file path in log lines |
-| `with_target(false)` | `true` | Show module path in log lines |
-| `with_timestamp(false)` | `true` | Prefix each line with a UTC RFC 3339 timestamp |
-| `with_output(Output::Both("app.log".into()))` | `Output::Stdout` | Write to stdout, stderr, a file, or both stdout and a file |
-| `colored(false)` | auto | Force ANSI colours on or off; by default they are on only when the output stream (stdout or stderr) is a terminal |
+| Method                                        | Default           | Description                                                                                                       |
+| --------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `with_level(Level::DEBUG)`                    | `Level::INFO`     | Global log level (`tracing::Level`); `with_env_filter` refines it per-target                                      |
+| `with_format(LogFormat::Json)`                | `LogFormat::Text` | Output format                                                                                                     |
+| `with_env_filter("info,my_crate=debug")`      | none              | Per-target filter via `EnvFilter`, layered on the level                                                           |
+| `with_env_filter_from_env()`                  | none              | Reads the filter from `RUST_LOG`; if it is unset, only the level applies                                          |
+| `with_file(true)`                             | `false`           | Show source file path in log lines                                                                                |
+| `with_target(false)`                          | `true`            | Show module path in log lines                                                                                     |
+| `with_timestamp(false)`                       | `true`            | Prefix each line with a UTC RFC 3339 timestamp                                                                    |
+| `with_output(Output::Both("app.log".into()))` | `Output::Stdout`  | Write to stdout, stderr, a file, or both stdout and a file                                                        |
+| `colored(false)`                              | auto              | Force ANSI colours on or off; by default they are on only when the output stream (stdout or stderr) is a terminal |
 
 ### Output destinations
 
