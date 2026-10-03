@@ -10,7 +10,6 @@ Nothing pending: every planned item has shipped. Add new ideas here.
 These would go beyond a thin wrapper. Use `tracing-subscriber` directly for them:
 
 - File rotation (use `logrotate`, or log to stdout in containers).
-- Non-blocking file writes (`tracing-appender`).
 - Custom layers, OpenTelemetry or Sentry integration.
 - Further format customisation (thread ids, span events, flattened JSON, …).
 

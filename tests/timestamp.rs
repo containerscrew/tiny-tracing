@@ -29,7 +29,7 @@ fn child_logs_one_line() {
         other => panic!("unknown case {other}"),
     };
 
-    Logger::new()
+    let _guard = Logger::new()
         .with_format(format)
         .with_timestamp(timestamp)
         .with_output(Output::File(PathBuf::from(file)))

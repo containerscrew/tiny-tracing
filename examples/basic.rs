@@ -5,7 +5,7 @@
 use tiny_tracing::{Logger, info};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new().init()?;
+    let _guard = Logger::new().init()?;
 
     info!("hello from tiny-tracing");
     Ok(())

@@ -9,7 +9,7 @@
 use tiny_tracing::{Level, Logger, debug, info, trace, warn};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new()
+    let _guard = Logger::new()
         .with_level(Level::DEBUG)
         .with_env_filter_from_env()
         .init()?;

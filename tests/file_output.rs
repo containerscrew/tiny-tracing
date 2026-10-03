@@ -15,12 +15,15 @@ fn file_output_writes_log_lines_to_disk() {
     let path = temp_path("file");
     let _ = fs::remove_file(&path);
 
-    Logger::new()
+    let guard = Logger::new()
         .with_output(Output::File(path.clone()))
         .init()
         .expect("init should succeed");
 
     info!(target: "file_output_test", "hello file");
+
+    // File writes happen on a background thread; dropping the guard flushes them.
+    drop(guard);
 
     let contents = fs::read_to_string(&path).expect("log file should exist");
     assert!(

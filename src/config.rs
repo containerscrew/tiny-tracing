@@ -2,10 +2,10 @@ use std::fs::{File, OpenOptions};
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use std::sync::Mutex;
 
 use crate::errors::LoggerError;
 use tracing::Level;
+use tracing_appender::non_blocking::{NonBlockingBuilder, WorkerGuard};
 use tracing_subscriber::fmt::time::UtcTime;
 use tracing_subscriber::{
     EnvFilter, Layer, Registry,
@@ -74,6 +74,38 @@ pub enum Output {
     Both(PathBuf),
 }
 
+/// Keeps background logging alive; returned by [`Logger::init`].
+///
+/// File output is written by a background thread. This guard owns that thread:
+/// when it is dropped, every line still queued is flushed to the file and the
+/// thread stops. Hold it until the program ends, typically as the first binding
+/// in `main`:
+///
+/// ```rust,no_run
+/// use tiny_tracing::{Logger, Output};
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let _guard = Logger::new()
+///         .with_output(Output::File("app.log".into()))
+///         .init()?;
+///
+///     tiny_tracing::info!("this line is flushed when `_guard` is dropped");
+///     Ok(())
+/// }
+/// ```
+///
+/// Do not bind it to a bare `_`: `let _ = Logger::new().init()?;` drops it
+/// immediately and file output stops. Also note that `std::process::exit` skips
+/// destructors, so lines still queued at that point are lost.
+///
+/// For [`Output::Stdout`] and [`Output::Stderr`] the guard holds nothing, but
+/// keeping it costs nothing and keeps the code independent of the output.
+#[must_use = "dropping the guard stops file logging; bind it with `let _guard = ...` and keep it alive until the program ends"]
+#[derive(Debug)]
+pub struct LoggerGuard {
+    _file: Option<WorkerGuard>,
+}
+
 /// Builder for initializing the global tracing subscriber.
 ///
 /// Uses a fluent builder pattern to configure log level, output format,
@@ -86,7 +118,7 @@ pub enum Output {
 /// ```rust
 /// use tiny_tracing::Logger;
 ///
-/// Logger::new().init().unwrap();
+/// let _guard = Logger::new().init().unwrap();
 /// tiny_tracing::info!("Ready");
 /// ```
 ///
@@ -95,7 +127,7 @@ pub enum Output {
 /// ```rust
 /// use tiny_tracing::{Logger, LogFormat, Level};
 ///
-/// Logger::new()
+/// let _guard = Logger::new()
 ///     .with_level(Level::DEBUG)
 ///     .with_format(LogFormat::Json)
 ///     .with_env_filter("info,my_crate=trace")
@@ -239,9 +271,15 @@ impl Logger {
     /// Sets where log lines are written: stdout, stderr, a file, or stdout and a file.
     ///
     /// Defaults to [`Output::Stdout`]. When a file is involved it is opened in
-    /// append mode (created if missing) and writes are synchronised, so the
-    /// call stays panic-free — an unopenable path yields
-    /// [`LoggerError::OpenLogFile`] from [`init`](Self::init).
+    /// append mode (created if missing), so the call stays panic-free — an
+    /// unopenable path yields [`LoggerError::OpenLogFile`] from
+    /// [`init`](Self::init).
+    ///
+    /// File writes are non-blocking: lines are queued and written by a
+    /// background thread owned by the [`LoggerGuard`] that
+    /// [`init`](Self::init) returns, which must be kept alive. The queue holds
+    /// up to 128 000 lines and no line is ever dropped; if it fills up, the
+    /// logging call waits for room.
     ///
     /// Writes to stdout and stderr are synchronous: each log line is written on
     /// the calling thread, which waits until the write finishes.
@@ -268,6 +306,9 @@ impl Logger {
     /// Consumes the builder. Must be called only once per process;
     /// subsequent calls return [`LoggerError::TryInitError`].
     ///
+    /// Returns a [`LoggerGuard`] that must be kept alive for as long as logging
+    /// is needed: dropping it flushes and stops the background file writer.
+    ///
     /// # Errors
     ///
     /// - [`LoggerError::InvalidEnvFilter`] if an env filter was set and
@@ -275,7 +316,7 @@ impl Logger {
     /// - [`LoggerError::OpenLogFile`] if a file output was requested but the
     ///   path could not be opened for writing.
     /// - [`LoggerError::TryInitError`] if a global subscriber is already set.
-    pub fn init(self) -> Result<(), LoggerError> {
+    pub fn init(self) -> Result<LoggerGuard, LoggerError> {
         let filter = EnvFilter::builder()
             .with_default_directive(LevelFilter::from_level(self.level).into())
             .parse(self.env_filter.as_deref().unwrap_or(""))
@@ -300,16 +341,21 @@ impl Logger {
             layers.push(self.fmt_layer(std::io::stderr, ansi));
         }
 
+        let mut file_guard = None;
         if let Some(path) = file_path {
             let file = open_log_file(&path)?;
-            layers.push(self.fmt_layer(Mutex::new(file), false));
+            let (writer, guard) = NonBlockingBuilder::default().lossy(false).finish(file);
+            layers.push(self.fmt_layer(writer, false));
+            file_guard = Some(guard);
         }
 
         tracing_subscriber::registry()
             .with(layers)
             .with(filter)
             .try_init()
-            .map_err(|e| LoggerError::TryInitError(e.to_string()))
+            .map_err(|e| LoggerError::TryInitError(e.to_string()))?;
+
+        Ok(LoggerGuard { _file: file_guard })
     }
 
     /// Builds a boxed `fmt` layer for the given writer, honouring the

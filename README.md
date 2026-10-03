@@ -40,7 +40,7 @@ Minimal setup — text output at INFO level, nothing else needed:
 use tiny_tracing::{Logger, info};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new().init()?;
+    let _guard = Logger::new().init()?;
 
     info!("hello from tiny-tracing");
     Ok(())
@@ -55,7 +55,7 @@ The builder API exposes every knob through chainable methods:
 use tiny_tracing::{Logger, LogFormat, Level, Output};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new()
+    let _guard = Logger::new()
         .with_level(Level::DEBUG)                  // TRACE | DEBUG | INFO | WARN | ERROR
         .with_format(LogFormat::Json)              // Text | Json
         .with_env_filter("info,my_crate=trace")    // per-target EnvFilter, on top of level
@@ -86,8 +86,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 `with_output` takes an `Output`: `Stdout` (default), `Stderr`, `File(path)`, or `Both(path)` (stdout plus a file). Use `Stderr` in
 command-line tools so stdout stays free for program output.
-File output is opened in append mode (created if missing) with synchronised,
-blocking writes — no background thread, no guard to keep alive.
+File output is opened in append mode (created if missing) and written by a background
+thread, so logging calls do not wait for the disk. See [The guard](#the-guard).
+
+### The guard
+
+`init()` returns a `LoggerGuard`. Keep it alive for as long as you log, typically as the
+first binding in `main`:
+
+```rust
+let _guard = Logger::new()
+    .with_output(Output::File("app.log".into()))
+    .init()?;
+```
+
+The guard owns the background thread that writes the file. Dropping it flushes every
+queued line and stops the thread, so:
+
+- Bind it to `_guard`, not to a bare `_`: `let _ = ...init()?;` drops it immediately and
+  nothing reaches the file. The type is `#[must_use]`, so the compiler warns about a
+  discarded guard.
+- `std::process::exit` skips destructors, so lines still queued at that point are lost.
+  Return from `main` instead.
+- The queue holds up to 128 000 lines and no line is ever dropped; if it fills up, the
+  logging call waits for room.
+- With `Stdout` or `Stderr` the guard holds nothing, but keep binding it so the code does
+  not depend on the output.
 
 ### Colours
 
@@ -146,11 +170,10 @@ cargo run --example stderr      # log to stderr, keep stdout for program output
 
 `tiny-tracing` is deliberately a thin wrapper, so some things are left out on purpose:
 
-- **File writes are blocking.** Each log line is written synchronously under a mutex,
-  with no background thread. That is fine for small and medium workloads, but heavy
-  logging from many threads or from async tasks can contend on the lock. If you need
-  non-blocking writes, use [`tracing-appender`](https://crates.io/crates/tracing-appender)
-  with `tracing-subscriber` directly.
+- **File writes need the guard.** They are non-blocking (a background thread, via
+  [`tracing-appender`](https://crates.io/crates/tracing-appender)), which means the
+  `LoggerGuard` returned by `init()` must stay alive and the process must end normally to
+  flush the queue.
 - **Stdout and stderr writes are synchronous too.** Each log line is written on the
   calling thread, which waits until the write finishes. That is fine at normal log
   volumes, but a slow consumer (a full pipe, a stalled log shipper) can stall the

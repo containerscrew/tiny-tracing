@@ -12,7 +12,7 @@
 //! use tiny_tracing::Logger;
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     Logger::new().init()?;
+//!     let _guard = Logger::new().init()?;
 //!
 //!     tiny_tracing::info!("Application started");
 //!     Ok(())
@@ -22,7 +22,8 @@
 //! # Features
 //!
 //! - Text and JSON output formats
-//! - Output to stdout, stderr, a file, or stdout and a file at once
+//! - Output to stdout, stderr, a file, or stdout and a file at once; file writes are
+//!   non-blocking (keep the [`LoggerGuard`] returned by `init` alive)
 //! - Environment-filter support via [`EnvFilter`](tracing_subscriber::EnvFilter)
 //!   (`"info,my_crate=debug"`), optionally read from `RUST_LOG`
 //! - Fluent builder API with sensible defaults
@@ -38,4 +39,4 @@ pub mod errors;
 
 pub use tracing::{Level, debug, error, info, trace, warn};
 
-pub use config::{LogFormat, Logger, Output};
+pub use config::{LogFormat, Logger, LoggerGuard, Output};

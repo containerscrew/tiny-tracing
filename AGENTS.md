@@ -16,12 +16,15 @@ initialisation (no panics on double-init).
 Source layout:
 
 - `src/lib.rs` — crate root, re-exports `tracing` macros (`info!`, `warn!`, …) and
-  `config::{Logger, LogFormat, Output}`.
+  `config::{Logger, LoggerGuard, LogFormat, Output}`.
 - `src/config.rs` — `Logger` builder (level, format, env filter or `RUST_LOG` via
   `with_env_filter_from_env`, file/target flags, optional timestamp, output destination,
   colour override) plus the `LogFormat` and `Output` enums, and `init()` which composes
   `fmt` layers on a `Registry` (UTC RFC 3339 timestamps via `tracing_subscriber`'s
-  `UtcTime`, or none with `with_timestamp(false)`) and calls `try_init()`.
+  `UtcTime`, or none with `with_timestamp(false)`) and calls `try_init()`. File output
+  goes through `tracing_appender::non_blocking`; `init()` returns a `LoggerGuard` that
+  owns the writer thread and flushes the queue on drop (tests must drop it before
+  reading the file).
 - `src/errors.rs` — `LoggerError` enum (`InvalidFormat`, `InvalidEnvFilter`,
   `OpenLogFile`, `TryInitError`) derived with `thiserror::Error`.
 - `tests/logger.rs` — integration tests for builder config and `init()` behaviour.

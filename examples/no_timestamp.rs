@@ -6,7 +6,7 @@
 use tiny_tracing::{Logger, info};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new().with_timestamp(false).init()?;
+    let _guard = Logger::new().with_timestamp(false).init()?;
 
     info!("this line has no timestamp");
     Ok(())

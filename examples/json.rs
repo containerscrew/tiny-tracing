@@ -5,7 +5,7 @@
 use tiny_tracing::{Level, LogFormat, Logger, info, warn};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new()
+    let _guard = Logger::new()
         .with_level(Level::DEBUG)
         .with_format(LogFormat::Json)
         .with_file(true)

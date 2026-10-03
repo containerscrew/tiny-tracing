@@ -19,7 +19,7 @@ fn child_logs_to_stderr() {
         return;
     }
 
-    Logger::new()
+    let _guard = Logger::new()
         .with_output(Output::Stderr)
         .init()
         .expect("init should succeed");

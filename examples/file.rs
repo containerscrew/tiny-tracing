@@ -8,7 +8,7 @@
 use tiny_tracing::{Logger, Output, info, warn};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Logger::new()
+    let _guard = Logger::new()
         .with_output(Output::Both("app.log".into()))
         .init()?;
 
