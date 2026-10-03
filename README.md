@@ -212,7 +212,20 @@ cd tiny-tracing
 cargo test                                        # unit + integration + doc-tests
 cargo fmt --all -- --check                        # check formatting
 cargo clippy --all-targets --all-features -- -D warnings
+
+cog install-hook --all                            # install the git pre-commit hook (once per clone)
 ```
+
+### Pre-commit hook
+
+The hook is defined in `cog.toml` (`[git_hooks.pre-commit]`). On every commit it runs
+[`prek`](https://github.com/j178/prek) with `.pre-commit-config.yaml`, then
+`cargo nextest run`, `cargo fmt --all -- --check` and `cargo check`.
+
+Git does not version hooks, so install it once after cloning with
+`cog install-hook --all`, and re-run it with `--overwrite` after editing `cog.toml`.
+Do not run `prek install`: it would replace the hook that `cog` generates. You need
+`cog`, `prek` and `cargo-nextest` installed locally.
 
 Releases are automated via [cocogitto](https://docs.cocogitto.io/) (Conventional Commits).
 See the [release skill](.claude/skills/release/SKILL.md) for the full workflow.
