@@ -110,13 +110,15 @@ pub struct Logger {
     with_target: bool,
     output: Output,
     colored: Option<bool>,
+    timestamp: bool,
 }
 
 impl Logger {
     /// Creates a new [`Logger`] with default values.
     ///
     /// Defaults: [`Level::INFO`], [`LogFormat::Text`], no env filter,
-    /// file location off, target on, output to stdout.
+    /// file location off, target on, timestamps on, output to stdout, colours
+    /// chosen automatically.
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -127,6 +129,7 @@ impl Logger {
             with_target: true,
             output: Output::Stdout,
             colored: None,
+            timestamp: true,
         }
     }
 
@@ -150,6 +153,31 @@ impl Logger {
         self
     }
 
+    /// Reads the filter directives from the `RUST_LOG` environment variable.
+    ///
+    /// When `RUST_LOG` is set (and valid UTF-8) it is used exactly as if it had
+    /// been passed to [`with_env_filter`](Self::with_env_filter), replacing any
+    /// filter set earlier. When it is not set, nothing changes and only the
+    /// [`with_level`](Self::with_level) value (plus any earlier env filter)
+    /// applies. A `RUST_LOG` that [`EnvFilter`] rejects makes
+    /// [`init`](Self::init) return [`LoggerError::InvalidEnvFilter`].
+    ///
+    /// The precedence rules of [`with_level`](Self::with_level) apply: a global
+    /// directive inside `RUST_LOG` (e.g. `RUST_LOG=warn`) takes precedence over
+    /// the configured level.
+    #[must_use]
+    pub fn with_env_filter_from_env(self) -> Self {
+        self.env_filter_from(std::env::var("RUST_LOG").ok())
+    }
+
+    /// Applies `value` as the env filter when present; keeps the current one otherwise.
+    fn env_filter_from(mut self, value: Option<String>) -> Self {
+        if let Some(filter) = value {
+            self.env_filter = Some(filter);
+        }
+        self
+    }
+
     /// Forces ANSI colours on or off for stdout or stderr.
     ///
     /// By default colours are chosen automatically (on only when the stream
@@ -167,6 +195,9 @@ impl Logger {
     /// [`with_level`](Logger::with_level) value. Supported syntax: `"info"`,
     /// `"info,my_crate=debug"`, etc.
     ///
+    /// To take the directives from `RUST_LOG` instead of passing them in code, use
+    /// [`with_env_filter_from_env`](Logger::with_env_filter_from_env).
+    ///
     /// If not called, only the static [`with_level`](Logger::with_level) value applies.
     #[must_use]
     pub fn with_env_filter(mut self, filter: impl Into<String>) -> Self {
@@ -180,6 +211,19 @@ impl Logger {
     #[must_use]
     pub fn with_file(mut self, enabled: bool) -> Self {
         self.with_file = enabled;
+        self
+    }
+
+    /// Controls whether each log line starts with a timestamp.
+    ///
+    /// Enabled by default. When on, timestamps are always UTC and formatted as
+    /// RFC 3339 with a sub-second fraction (e.g. `2026-10-01T12:00:00.123456Z`),
+    /// in both text and JSON output. Trailing zeros of the fraction are trimmed,
+    /// so its length varies. Turn it off when something else already adds
+    /// one, such as journald or a container runtime.
+    #[must_use]
+    pub fn with_timestamp(mut self, enabled: bool) -> Self {
+        self.timestamp = enabled;
         self
     }
 
@@ -270,8 +314,12 @@ impl Logger {
     }
 
     /// Builds a boxed `fmt` layer for the given writer, honouring the
-    /// configured format and field flags. `ansi` toggles colour output —
-    /// enabled for terminals, disabled for files.
+    /// configured format, field flags and timestamp setting. `ansi` toggles
+    /// colour output — enabled for terminals, disabled for files.
+    ///
+    /// The timer is a type parameter of the layer, so the timestamp on/off
+    /// choice cannot be a conditional inside the builder chain; each
+    /// format/timestamp combination is built in its own `match` arm.
     fn fmt_layer<W>(&self, writer: W, ansi: bool) -> Box<dyn Layer<Registry> + Send + Sync>
     where
         W: for<'writer> MakeWriter<'writer> + Send + Sync + 'static,
@@ -282,12 +330,13 @@ impl Logger {
             .with_thread_names(false)
             .with_span_events(FmtSpan::NONE)
             .with_file(self.with_file)
-            .with_target(self.with_target)
-            .with_timer(UtcTime::rfc_3339());
+            .with_target(self.with_target);
 
-        match self.format {
-            LogFormat::Json => layer.json().boxed(),
-            LogFormat::Text => layer.boxed(),
+        match (self.format, self.timestamp) {
+            (LogFormat::Json, true) => layer.with_timer(UtcTime::rfc_3339()).json().boxed(),
+            (LogFormat::Json, false) => layer.without_time().json().boxed(),
+            (LogFormat::Text, true) => layer.with_timer(UtcTime::rfc_3339()).boxed(),
+            (LogFormat::Text, false) => layer.without_time().boxed(),
         }
     }
 }
@@ -307,5 +356,33 @@ fn open_log_file(path: &Path) -> Result<File, LoggerError> {
 impl Default for Logger {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn env_filter_from_uses_value_when_present() {
+        let logger = Logger::new().env_filter_from(Some("debug,my_crate=trace".to_string()));
+        assert_eq!(logger.env_filter.as_deref(), Some("debug,my_crate=trace"));
+    }
+
+    #[test]
+    fn env_filter_from_replaces_earlier_filter() {
+        let logger = Logger::new()
+            .with_env_filter("warn")
+            .env_filter_from(Some("debug".to_string()));
+        assert_eq!(logger.env_filter.as_deref(), Some("debug"));
+    }
+
+    #[test]
+    fn env_filter_from_keeps_current_filter_when_absent() {
+        let logger = Logger::new().env_filter_from(None);
+        assert_eq!(logger.env_filter, None);
+
+        let logger = Logger::new().with_env_filter("warn").env_filter_from(None);
+        assert_eq!(logger.env_filter.as_deref(), Some("warn"));
     }
 }

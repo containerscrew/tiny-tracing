@@ -17,15 +17,18 @@ Source layout:
 
 - `src/lib.rs` — crate root, re-exports `tracing` macros (`info!`, `warn!`, …) and
   `config::{Logger, LogFormat, Output}`.
-- `src/config.rs` — `Logger` builder (level, format, env filter, file/target flags,
-  output destination, colour override) plus the `LogFormat` and `Output` enums, and
-  `init()` which composes `fmt` layers on a `Registry` (UTC RFC 3339 timestamps via
-  `tracing_subscriber`'s `UtcTime`) and calls `try_init()`.
+- `src/config.rs` — `Logger` builder (level, format, env filter or `RUST_LOG` via
+  `with_env_filter_from_env`, file/target flags, optional timestamp, output destination,
+  colour override) plus the `LogFormat` and `Output` enums, and `init()` which composes
+  `fmt` layers on a `Registry` (UTC RFC 3339 timestamps via `tracing_subscriber`'s
+  `UtcTime`, or none with `with_timestamp(false)`) and calls `try_init()`.
 - `src/errors.rs` — `LoggerError` enum (`InvalidFormat`, `InvalidEnvFilter`,
   `OpenLogFile`, `TryInitError`) derived with `thiserror::Error`.
 - `tests/logger.rs` — integration tests for builder config and `init()` behaviour.
 - `tests/file_output.rs` — integration tests for file output and open failures.
-- `examples/` — runnable examples (`basic`, `json`, `env_filter`, `file`, `colored`, `stderr`).
+- `tests/timestamp.rs` — timestamp format and `with_timestamp(false)`; each case runs in a
+  child process (re-exec of the test binary) because the global subscriber is set once.
+- `examples/` — runnable examples (`basic`, `json`, `env_filter`, `env_filter_from_env`, `file`, `colored`, `stderr`, `no_timestamp`).
 - `roadmap.md` — planned improvements, written for the maintainer to implement
   by hand. Do not implement roadmap items unless asked.
 

@@ -24,9 +24,9 @@
 //! - Text and JSON output formats
 //! - Output to stdout, stderr, a file, or stdout and a file at once
 //! - Environment-filter support via [`EnvFilter`](tracing_subscriber::EnvFilter)
-//!   (`"info,my_crate=debug"`, `RUST_LOG`, etc.)
+//!   (`"info,my_crate=debug"`), optionally read from `RUST_LOG`
 //! - Fluent builder API with sensible defaults
-//! - UTC RFC 3339 timestamps
+//! - UTC RFC 3339 timestamps, which can be turned off
 //! - Safe initialisation — never panics on double-init
 
 #![deny(missing_docs)]

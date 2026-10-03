@@ -59,8 +59,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_level(Level::DEBUG)                  // TRACE | DEBUG | INFO | WARN | ERROR
         .with_format(LogFormat::Json)              // Text | Json
         .with_env_filter("info,my_crate=trace")    // per-target EnvFilter, on top of level
+        // .with_env_filter_from_env()            // or read it from RUST_LOG instead
         .with_file(true)                           // show source file in log lines
         .with_target(false)                        // hide module path
+        .with_timestamp(false)                     // omit the timestamp (default: on, UTC RFC 3339)
         .with_output(Output::Both("app.log".into())) // stdout + file
         .colored(false)                            // force ANSI colours off (default: auto)
         .init()?;
@@ -73,8 +75,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 | `with_level(Level::DEBUG)` | `Level::INFO` | Global log level (`tracing::Level`); `with_env_filter` refines it per-target |
 | `with_format(LogFormat::Json)` | `LogFormat::Text` | Output format |
 | `with_env_filter("info,my_crate=debug")` | none | Per-target filter via `EnvFilter`, layered on the level |
+| `with_env_filter_from_env()` | none | Reads the filter from `RUST_LOG`; if it is unset, only the level applies |
 | `with_file(true)` | `false` | Show source file path in log lines |
 | `with_target(false)` | `true` | Show module path in log lines |
+| `with_timestamp(false)` | `true` | Prefix each line with a UTC RFC 3339 timestamp |
 | `with_output(Output::Both("app.log".into()))` | `Output::Stdout` | Write to stdout, stderr, a file, or both stdout and a file |
 | `colored(false)` | auto | Force ANSI colours on or off; by default they are on only when the output stream (stdout or stderr) is a terminal |
 
@@ -95,8 +99,22 @@ yourself.
 
 ### Timestamps
 
-Every log line carries an RFC 3339 timestamp in UTC (for example
-`2026-10-01T12:00:00.123456Z`), in both text and JSON output.
+By default every log line carries an RFC 3339 timestamp in UTC (for example
+`2026-10-01T12:00:00.123456Z`), in both text and JSON output. The sub-second
+fraction has a variable length because trailing zeros are trimmed. Local time is not
+supported, so lines from different hosts are easy to correlate.
+
+Call `with_timestamp(false)` to leave the timestamp out, for example when journald or
+your container runtime already adds its own. In JSON output the `timestamp` field is
+then omitted too.
+
+### Environment filter
+
+`with_env_filter("info,my_crate=debug")` takes the directives as a string.
+`with_env_filter_from_env()` reads them from `RUST_LOG` instead. If `RUST_LOG` is unset
+only the level applies, and an invalid value makes `init()` return
+`LoggerError::InvalidEnvFilter`. A global directive in the filter (such as
+`RUST_LOG=warn`) takes precedence over `with_level`.
 
 Need to load config from a string (env var, TOML)? `LogFormat` implements `FromStr`,
 and `tracing::Level` does too:
@@ -116,9 +134,11 @@ Runnable examples live under [`examples/`](./examples):
 ```bash
 cargo run --example basic       # text output at INFO
 cargo run --example json        # JSON output at DEBUG, with file locations
-cargo run --example env_filter  # per-target filter (respects RUST_LOG)
+cargo run --example env_filter  # per-target filter passed as a string
+cargo run --example env_filter_from_env  # filter read from RUST_LOG
 cargo run --example file        # write to stdout + a file at once
 cargo run --example colored     # force ANSI colours off
+cargo run --example no_timestamp  # omit the timestamp
 cargo run --example stderr      # log to stderr, keep stdout for program output
 ```
 
