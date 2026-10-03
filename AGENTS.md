@@ -92,10 +92,15 @@ Pushing a `*.*.*` tag triggers the `publish-crate` CI job which runs
 
 ## CI
 
-`.github/workflows/test.yml` runs on PRs, pushes matching the path filter, and tag
+`.github/workflows/ci.yml` runs on PRs, pushes matching the path filter, and tag
 pushes. Jobs: `security` (cargo-audit + cargo-deny), `linting` (fmt + clippy),
-`test` (x86_64 + aarch64 matrix), `publish-crate` on tag. The `security` job also
-runs weekly on a cron (`0 7 * * 1`) to surface new advisories.
+`test` (x86_64 + aarch64 matrix), `msrv` (`cargo check` on the `rust-version` toolchain),
+`publish-crate` on tag. The `security` job also runs weekly on a cron (`0 7 * * 1`) to
+surface new advisories.
+
+The MSRV (`rust-version` in `Cargo.toml`, README badge, `msrv` job) must stay in sync;
+the README's "Minimum supported Rust version" section explains how to measure it with
+`cargo msrv find`. `rust-toolchain.toml` only pins the development toolchain.
 
 `cargo-deny` policy lives in `deny.toml` — keep advisories at `version = 2` and only
 permissive licenses allowed. The project itself is MIT-licensed.

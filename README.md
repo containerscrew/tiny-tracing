@@ -164,6 +164,22 @@ cargo clippy --all-targets --all-features -- -D warnings
 Releases are automated via [cocogitto](https://docs.cocogitto.io/) (Conventional Commits).
 See the [release skill](.claude/skills/release/SKILL.md) for the full workflow.
 
+### Minimum supported Rust version (MSRV)
+
+`rust-version` in `Cargo.toml` is the oldest Rust the crate promises to build with. It is
+independent of `rust-toolchain.toml`, which only pins the toolchain used for development.
+CI checks it with the `msrv` job. After bumping dependencies or adding code that needs a
+newer compiler, measure the real minimum with
+[`cargo-msrv`](https://github.com/foresterre/cargo-msrv):
+
+```bash
+cargo install cargo-msrv --locked
+cargo msrv find        # tries older toolchains until the build breaks
+```
+
+Then update `rust-version` in `Cargo.toml`, the MSRV badge at the top of this file and the
+`msrv` job in `.github/workflows/ci.yml` to the same version.
+
 ### Agent skills
 
 AI coding agents working on this repo use these third-party skills (installed under
