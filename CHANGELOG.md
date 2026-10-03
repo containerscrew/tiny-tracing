@@ -2,6 +2,35 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.3.0 - 2026-10-03
+#### Features
+- add with_env_filter_from_env and with_timestamp - (b259a4e) - containerscrew
+- add Output::Stderr - (728ab7e) - containerscrew
+- <span style="background-color: #d73a49; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.85em;">BREAKING</span>mark public enums as non_exhaustive - (a9b8ad3) - containerscrew
+- emit UTC RFC 3339 timestamps and auto-detect ANSI colours - (7abc3ff) - containerscrew
+#### Documentation
+- restructure roadmap and drop finished items - (f506dae) - containerscrew
+- mention UTC timestamps in crate docs and drop done roadmap items - (4208642) - containerscrew
+- document MSRV workflow and fix CI references - (4042554) - containerscrew
+- move roadmap to repo root - (18aa227) - containerscrew
+- trim roadmap to pending work - (d13474a) - containerscrew
+- update README.md - (a4f78f8) - containerscrew
+- document colour override, UTC timestamps and AI usage - (bb6ad93) - containerscrew
+- add roadmap and document limitations - (35db26d) - containerscrew
+- add security policy and document dependabot - (f943f52) - containerscrew
+- make AGENTS.md the single agent guide and document agent skills - (21c170e) - containerscrew
+#### Build system
+- lower MSRV to 1.88 and add MSRV CI job - (5e369dc) - containerscrew
+#### Continuous Integration
+- (**deps**) bump actions/checkout from 6 to 7 - (29d71a1) - dependabot[bot]
+- update pipeline name - (2230c8a) - containerscrew
+- fix dependabot config filename and tune update schedule - (b56f7b5) - containerscrew
+#### Miscellaneous Chores
+- (**deps**) update Cargo.lock dependencies - (f110a22) - containerscrew
+- update pre-commit hooks and ignore app.log - (dddffa8) - containerscrew
+
+- - -
+
 ## 0.2.0 - 2026-07-06
 #### Features
 - (**config**) add stdout, file, and combined output destinations - (6fc1243) - containerscrew
