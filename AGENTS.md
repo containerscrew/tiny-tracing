@@ -42,7 +42,7 @@ Rust toolchain is pinned via `rust-toolchain.toml`.
 
 ```bash
 cargo test                   # unit + integration + doc-tests
-cargo nextest run            # what the pre-commit hook runs (no doc-tests: use `cargo test --doc`)
+cargo nextest run            # part of the pre-commit hook (no doc-tests: use `cargo test --doc`)
 cargo fmt --all -- --check   # check formatting
 cargo clippy --all-targets --all-features -- -D warnings
 cargo publish --dry-run      # verify crate packages correctly
@@ -56,9 +56,12 @@ Run a single integration test: `cargo test --test logger <test_name>`.
   Use `cog commit <type> "<msg>" [scope]` rather than `git commit -m`. Common types:
   `feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`.
   Commits are authored solely by the repo owner (see "Things to avoid" for attribution).
-- **Pre-commit hook** (`pre-commit.sh`) runs `pre-commit run -a`, `cargo nextest run`,
-  `cargo fmt`, and `cargo check`. If a hook fails, fix the underlying issue and create
-  a NEW commit.
+- **Pre-commit hook**: defined inline in `cog.toml` (`[git_hooks.pre-commit]`), it runs
+  `prek run -a` (reads `.pre-commit-config.yaml`), `cargo nextest run`,
+  `cargo fmt --all -- --check` and `cargo check`. Git does not version hooks, so install
+  it once per clone with `cog install-hook --all` (re-run with `--overwrite` after
+  editing `cog.toml`). Do not run `prek install`, it would replace cog's hook. If a hook
+  fails, fix the underlying issue and create a NEW commit.
 - **Documentation hygiene**: when a change touches the public API, behaviour, commands
   or workflow, update the docs that describe it (`README.md`, `examples/`, this file,
   and the relevant `.claude/skills/**/SKILL.md`) in the same commit, or as an immediate
@@ -84,8 +87,8 @@ cog bump --version X.Y.Z # explicit version
 `Cargo.lock`, and regenerate `CHANGELOG.md`. The `Cargo.toml` version and the latest
 git tag MUST stay in sync — verify before and after.
 
-Required local tools: `cog` (cocogitto 7+), `cargo-set-version` (from `cargo-edit`), and
-`cargo-nextest`.
+Required local tools: `cog` (cocogitto 7+), `cargo-set-version` (from `cargo-edit`),
+`cargo-nextest` and `prek`.
 
 After `cog bump`, push the tag manually:
 

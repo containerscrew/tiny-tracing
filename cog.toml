@@ -15,7 +15,14 @@ post_bump_hooks = []
 
 [git_hooks]
 [git_hooks.pre-commit]
-script = "./pre-commit.sh"
+script = """#!/usr/bin/env bash
+set -euo pipefail
+
+prek run -a --show-diff-on-failure
+cargo nextest run
+cargo fmt --all -- --check
+cargo check -q
+"""
 
 [changelog]
 path = "CHANGELOG.md"
