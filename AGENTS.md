@@ -26,6 +26,7 @@ Source layout:
   `OpenLogFile`, `TryInitError`) derived with `thiserror::Error`.
 - `tests/logger.rs` — integration tests for builder config and `init()` behaviour.
 - `tests/file_output.rs` — integration tests for file output and open failures.
+- `tests/stderr_output.rs` — `Output::Stderr` keeps logs off stdout (child process, same reason).
 - `tests/timestamp.rs` — timestamp format and `with_timestamp(false)`; each case runs in a
   child process (re-exec of the test binary) because the global subscriber is set once.
 - `examples/` — runnable examples (`basic`, `json`, `env_filter`, `env_filter_from_env`, `file`, `colored`, `stderr`, `no_timestamp`).

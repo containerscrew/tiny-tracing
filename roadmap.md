@@ -3,8 +3,7 @@
 Planned improvements for `tiny-tracing`, roughly ordered by priority. They should ship
 together as the `0.3.0` release.
 
-1. **Test the colour decision.** Extract it into a pure function such as `use_ansi(colored: Option<bool>, is_terminal: bool) -> bool` and unit-test the cases (`None` with and without a terminal, `Some(true)`, `Some(false)`). `init()` repeats the decision for stdout and for stderr; calling the function from both places removes the duplication. Testing through `init()` is awkward because the global subscriber can only be set once per process.
-2. **Test `Output::Stderr`.** Check that `init()` succeeds and a second call returns `LoggerError::TryInitError` (own test file), cover the stderr colour decision through item 1, and verify the lines land on stderr and not on stdout by running the compiled `examples/stderr` binary with `std::process::Command` and capturing both streams.
+Nothing pending: every planned item has shipped. Add new ideas here.
 
 ## Not planned
 

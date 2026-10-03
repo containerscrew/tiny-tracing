@@ -288,16 +288,12 @@ impl Logger {
         let mut layers: Vec<Box<dyn Layer<Registry> + Send + Sync>> = Vec::new();
 
         if to_stdout {
-            let ansi = self
-                .colored
-                .unwrap_or_else(|| std::io::stdout().is_terminal());
+            let ansi = use_ansi(self.colored, std::io::stdout().is_terminal());
             layers.push(self.fmt_layer(std::io::stdout, ansi));
         }
 
         if to_stderr {
-            let ansi = self
-                .colored
-                .unwrap_or_else(|| std::io::stderr().is_terminal());
+            let ansi = use_ansi(self.colored, std::io::stderr().is_terminal());
             layers.push(self.fmt_layer(std::io::stderr, ansi));
         }
 
@@ -341,6 +337,12 @@ impl Logger {
     }
 }
 
+/// Decides whether ANSI colours are emitted: an explicit `colored` setting wins,
+/// otherwise colours are on only when the stream being written to is a terminal.
+fn use_ansi(colored: Option<bool>, is_terminal: bool) -> bool {
+    colored.unwrap_or(is_terminal)
+}
+
 /// Opens `path` in append mode (creating it if absent) for log output.
 fn open_log_file(path: &Path) -> Result<File, LoggerError> {
     OpenOptions::new()
@@ -362,6 +364,24 @@ impl Default for Logger {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn use_ansi_follows_the_terminal_when_not_forced() {
+        assert!(use_ansi(None, true));
+        assert!(!use_ansi(None, false));
+    }
+
+    #[test]
+    fn use_ansi_forced_on_ignores_the_terminal() {
+        assert!(use_ansi(Some(true), true));
+        assert!(use_ansi(Some(true), false));
+    }
+
+    #[test]
+    fn use_ansi_forced_off_ignores_the_terminal() {
+        assert!(!use_ansi(Some(false), true));
+        assert!(!use_ansi(Some(false), false));
+    }
 
     #[test]
     fn env_filter_from_uses_value_when_present() {
