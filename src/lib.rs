@@ -26,6 +26,7 @@
 //! - Environment-filter support via [`EnvFilter`](tracing_subscriber::EnvFilter)
 //!   (`"info,my_crate=debug"`, `RUST_LOG`, etc.)
 //! - Fluent builder API with sensible defaults
+//! - UTC RFC 3339 timestamps
 //! - Safe initialisation — never panics on double-init
 
 #![deny(missing_docs)]

@@ -28,8 +28,6 @@ subscriber). Log to a temp file, as `tests/file_output.rs` does, and assert the
 timestamp looks like `YYYY-MM-DDTHH:MM:SS.ffffffZ` (UTC, RFC 3339) in both text and
 JSON output.
 
-Optionally mention in the crate docs (`src/lib.rs`) that timestamps are UTC.
-
 ## Cheap improvements
 
 ### 3. `Output::Stderr`
@@ -45,13 +43,6 @@ The library never reads `RUST_LOG`; callers must pass the string themselves, eve
 the crate docs mention `RUST_LOG`. Consider a builder method such as
 `with_env_filter_from_env()` that reads `RUST_LOG` when set and falls back to
 `with_level` otherwise. Keep the precedence rules documented on `with_level`.
-
-### 5. `#[non_exhaustive]` on public enums
-
-Mark `Output`, `LogFormat` and `LoggerError` as `#[non_exhaustive]` so adding variants
-later (such as `Output::Stderr`) is not a breaking change for users who `match` on them.
-Do this in the same release as item 3. Adding it is itself breaking, which is fine in
-`0.x`.
 
 ## Not planned
 
