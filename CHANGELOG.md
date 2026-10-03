@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.4.0 - 2026-10-03
+#### Features
+- <span style="background-color: #d73a49; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.85em;">BREAKING</span>make file output non-blocking and return LoggerGuard - (59bebfb) - containerscrew
+#### Documentation
+- note that stdout and stderr writes are synchronous - (61b4149) - containerscrew
+- update basic example in README - (3b415aa) - containerscrew
+#### Tests
+- cover colour decision and Output::Stderr - (7746c7b) - containerscrew
+
+- - -
+
 ## 0.3.0 - 2026-10-03
 #### Features
 - add with_env_filter_from_env and with_timestamp - (b259a4e) - containerscrew
