@@ -60,6 +60,11 @@ pub enum Output {
     /// Standard output only. This is the default.
     #[default]
     Stdout,
+    /// Standard error only.
+    ///
+    /// Keeps stdout free for program output, which is what command-line tools
+    /// usually want. The automatic colour decision checks stderr, not stdout.
+    Stderr,
     /// The given file only. Created if missing, appended otherwise.
     File(PathBuf),
     /// Both standard output and the given file.
@@ -145,10 +150,11 @@ impl Logger {
         self
     }
 
-    /// Forces ANSI colours on or off for stdout.
+    /// Forces ANSI colours on or off for stdout or stderr.
     ///
-    /// By default colours are chosen automatically (on only when stdout is a
-    /// terminal). File output is never coloured, regardless of this setting.
+    /// By default colours are chosen automatically (on only when the stream
+    /// being written to, stdout or stderr, is a terminal). File output is never
+    /// coloured, regardless of this setting.
     #[must_use]
     pub fn colored(mut self, colored: bool) -> Self {
         self.colored = Some(colored);
@@ -186,7 +192,7 @@ impl Logger {
         self
     }
 
-    /// Sets where log lines are written: stdout, a file, or both.
+    /// Sets where log lines are written: stdout, stderr, a file, or stdout and a file.
     ///
     /// Defaults to [`Output::Stdout`]. When a file is involved it is opened in
     /// append mode (created if missing) and writes are synchronised, so the
@@ -228,10 +234,11 @@ impl Logger {
             .parse(self.env_filter.as_deref().unwrap_or(""))
             .map_err(|e| LoggerError::InvalidEnvFilter(e.to_string()))?;
 
-        let (to_stdout, file_path) = match &self.output {
-            Output::Stdout => (true, None),
-            Output::File(path) => (false, Some(path.clone())),
-            Output::Both(path) => (true, Some(path.clone())),
+        let (to_stdout, to_stderr, file_path) = match &self.output {
+            Output::Stdout => (true, false, None),
+            Output::Stderr => (false, true, None),
+            Output::File(path) => (false, false, Some(path.clone())),
+            Output::Both(path) => (true, false, Some(path.clone())),
         };
 
         let mut layers: Vec<Box<dyn Layer<Registry> + Send + Sync>> = Vec::new();
@@ -241,6 +248,13 @@ impl Logger {
                 .colored
                 .unwrap_or_else(|| std::io::stdout().is_terminal());
             layers.push(self.fmt_layer(std::io::stdout, ansi));
+        }
+
+        if to_stderr {
+            let ansi = self
+                .colored
+                .unwrap_or_else(|| std::io::stderr().is_terminal());
+            layers.push(self.fmt_layer(std::io::stderr, ansi));
         }
 
         if let Some(path) = file_path {

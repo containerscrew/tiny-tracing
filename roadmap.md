@@ -30,14 +30,7 @@ JSON output.
 
 ## Cheap improvements
 
-### 3. `Output::Stderr`
-
-CLI tools usually log to stderr so stdout stays free for program output. Add an
-`Output::Stderr` variant and handle it in `Logger::init`. The automatic colour decision
-must check whether **stderr** is a terminal, not stdout. Update the `Output` docs, the
-`colored` doc comment (it says "stdout") and the README.
-
-### 4. Read the filter from the environment
+### 3. Read the filter from the environment
 
 The library never reads `RUST_LOG`; callers must pass the string themselves, even though
 the crate docs mention `RUST_LOG`. Consider a builder method such as

@@ -75,18 +75,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 | `with_env_filter("info,my_crate=debug")` | none | Per-target filter via `EnvFilter`, layered on the level |
 | `with_file(true)` | `false` | Show source file path in log lines |
 | `with_target(false)` | `true` | Show module path in log lines |
-| `with_output(Output::Both("app.log".into()))` | `Output::Stdout` | Write to stdout, a file, or both |
-| `colored(false)` | auto | Force ANSI colours on or off for stdout; by default they are on only when stdout is a terminal |
+| `with_output(Output::Both("app.log".into()))` | `Output::Stdout` | Write to stdout, stderr, a file, or both stdout and a file |
+| `colored(false)` | auto | Force ANSI colours on or off; by default they are on only when the output stream (stdout or stderr) is a terminal |
 
 ### Output destinations
 
-`with_output` takes an `Output`: `Stdout` (default), `File(path)`, or `Both(path)`.
+`with_output` takes an `Output`: `Stdout` (default), `Stderr`, `File(path)`, or `Both(path)` (stdout plus a file). Use `Stderr` in
+command-line tools so stdout stays free for program output.
 File output is opened in append mode (created if missing) with synchronised,
 blocking writes — no background thread, no guard to keep alive.
 
 ### Colours
 
-By default ANSI colours are used only when stdout is a terminal, so piped output,
+By default ANSI colours are used only when the stream being written to is a terminal, so piped output,
 Docker and CI logs stay free of escape codes. Call `colored(true)` or `colored(false)`
 to override that. File output is never coloured, whatever you choose. The `NO_COLOR`
 environment variable is not read; use `colored(false)` if you want to honour it
@@ -118,6 +119,7 @@ cargo run --example json        # JSON output at DEBUG, with file locations
 cargo run --example env_filter  # per-target filter (respects RUST_LOG)
 cargo run --example file        # write to stdout + a file at once
 cargo run --example colored     # force ANSI colours off
+cargo run --example stderr      # log to stderr, keep stdout for program output
 ```
 
 ## Limitations
@@ -134,7 +136,9 @@ cargo run --example colored     # force ANSI colours off
   [`tracing-appender`](https://crates.io/crates/tracing-appender)'s rolling files.
 - **In containers, log to stdout.** In Docker, Kubernetes or systemd, keep the default
   `Output::Stdout` and let the platform collect and rotate the logs, rather than writing
-  files inside the container.
+  files inside the container. `LogFormat::Json` is usually the best fit for log
+  aggregators, and colours switch off by themselves because stdout is not a terminal.
+  Use `Output::Stderr` instead for command-line tools whose stdout carries data.
 
 Planned improvements are tracked in [`roadmap.md`](./roadmap.md).
 

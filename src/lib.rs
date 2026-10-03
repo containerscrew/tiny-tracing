@@ -22,7 +22,7 @@
 //! # Features
 //!
 //! - Text and JSON output formats
-//! - Output to stdout, a file, or both
+//! - Output to stdout, stderr, a file, or stdout and a file at once
 //! - Environment-filter support via [`EnvFilter`](tracing_subscriber::EnvFilter)
 //!   (`"info,my_crate=debug"`, `RUST_LOG`, etc.)
 //! - Fluent builder API with sensible defaults
