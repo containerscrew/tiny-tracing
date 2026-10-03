@@ -136,7 +136,7 @@ cargo run --example colored     # force ANSI colours off
   `Output::Stdout` and let the platform collect and rotate the logs, rather than writing
   files inside the container.
 
-Planned improvements are tracked in [`docs/roadmap.md`](./docs/roadmap.md).
+Planned improvements are tracked in [`roadmap.md`](./roadmap.md).
 
 ## Safety
 

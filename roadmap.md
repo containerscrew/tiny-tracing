@@ -80,4 +80,4 @@ use `tracing-subscriber` directly:
 - Commit the breaking changes with a `!` type (`feat!:`) or a `BREAKING CHANGE:` footer.
 - Release with the explicit `cog bump --version 0.3.0` rather than `--auto`, since
   cocogitto may treat a breaking change as a major bump. See the
-  [release skill](../.claude/skills/release/SKILL.md).
+  [release skill](.claude/skills/release/SKILL.md).
