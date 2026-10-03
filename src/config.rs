@@ -17,6 +17,7 @@ use tracing_subscriber::{
 
 /// Output format for log lines.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[non_exhaustive]
 pub enum LogFormat {
     /// Human-readable single-line text output.
     #[default]
@@ -54,6 +55,7 @@ impl FromStr for LogFormat {
 
 /// Where log lines are written.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[non_exhaustive]
 pub enum Output {
     /// Standard output only. This is the default.
     #[default]

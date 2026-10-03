@@ -2,6 +2,7 @@ use thiserror::Error;
 
 /// Errors that can occur when configuring and initialising the logger.
 #[derive(Error, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum LoggerError {
     /// The supplied format string is not a known [`LogFormat`](crate::LogFormat).
     ///
