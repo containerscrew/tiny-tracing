@@ -5,48 +5,30 @@ it a thin, simple wrapper around `tracing-subscriber`. Items are ordered by prio
 Because several of them change behaviour or public API, ship them together as a
 `0.3.0` release.
 
-## Production issues
+## Pending work on changes already in the code
 
-### 1. ANSI colours are always on for stdout — code done, tests and docs pending
+Automatic ANSI colour detection (`Logger::colored` is an `Option<bool>`, `None` meaning
+"only when stdout is a terminal") and UTC RFC 3339 timestamps (`UtcTime::rfc_3339()`)
+are implemented and documented in `README.md` and `AGENTS.md`. They still lack tests.
 
-**Problem:** `Logger::init` used to hardcode `ansi = true` for stdout, so when stdout is
-not a terminal (a pipe, `> file`, Docker/journald, CI logs) the text output still
-contained escape codes.
+### 1. Test the colour decision
 
-**Decision taken:** `Logger` stores `colored: Option<bool>`. `None` (the default) means
-automatic: colours only when stdout is a terminal (`std::io::IsTerminal`).
-`.colored(true|false)` forces it either way. File output is never coloured.
-`NO_COLOR` is deliberately **not** read; the docs must say so.
+Extract the decision into a small pure function, for example
+`fn use_ansi(colored: Option<bool>, is_terminal: bool) -> bool`, and unit-test the
+three cases (`None` with and without a terminal, `Some(true)`, `Some(false)`). The
+global subscriber can only be set once per process, so testing through `init()` is
+awkward.
 
-**Still to do:**
-- Extract the decision into a small pure function, for example
-  `fn use_ansi(colored: Option<bool>, is_terminal: bool) -> bool`, and unit-test the
-  three cases (`None` with and without a terminal, `Some(true)`, `Some(false)`). The
-  global subscriber can only be set once per process, so testing through `init()` is
-  awkward.
-- Run `cargo fmt --all` before committing.
-- Optionally mention the colour behaviour in the crate docs (`src/lib.rs` feature list).
+Optionally mention the colour behaviour in the crate docs (`src/lib.rs` feature list).
 
-Docs (`README.md`, `AGENTS.md`) are already updated.
+### 2. Test the timestamp format
 
-### 2. Ambiguous timestamps — code done, tests and docs pending
+Add `tests/timestamp.rs` (its own file, so it gets its own process and its own global
+subscriber). Log to a temp file, as `tests/file_output.rs` does, and assert the
+timestamp looks like `YYYY-MM-DDTHH:MM:SS.ffffffZ` (UTC, RFC 3339) in both text and
+JSON output.
 
-**Problem:** `LocalTimer` formatted `%Y-%m-%d %H:%M:%S` in local time, with no UTC offset
-and no sub-second precision. In JSON output, which is what log aggregators (Loki,
-Datadog, CloudWatch, …) ingest, this is ambiguous and hard to correlate across hosts.
-
-**Decision taken:** always UTC, RFC 3339, using `tracing_subscriber`'s
-`UtcTime::rfc_3339()` (the `time` feature). `chrono`, `LocalTimer` and `pub mod time` were
-removed, which is a breaking change.
-
-**Still to do:**
-- Add `tests/timestamp.rs` (its own file, so it gets its own process and its own global
-  subscriber). Log to a temp file, as `tests/file_output.rs` does, and assert the
-  timestamp looks like `YYYY-MM-DDTHH:MM:SS.ffffffZ` (UTC, RFC 3339) in both text and
-  JSON output.
-- Optionally mention in the crate docs (`src/lib.rs`) that timestamps are UTC.
-
-Docs (`README.md`, `AGENTS.md`) are already updated.
+Optionally mention in the crate docs (`src/lib.rs`) that timestamps are UTC.
 
 ## Cheap improvements
 
