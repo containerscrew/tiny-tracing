@@ -24,9 +24,13 @@
 ---
 
 > [!NOTE]
-> AI coding assistants are used in this project mainly for best-practice and design
-> guidance (through the [agent skills](#agent-skills) listed below), to keep the library
-> as simple and productive as possible, and above all to document its functions.
+> AI coding assistants are used in this project for architecture and design guidance
+> (through the [agent skills](#agent-skills) listed below), documentation, keeping the
+> repository structure clean and maintaining the docstrings of the functions. They may
+> also help with non-critical code such as tests, examples or tooling, always reviewed by
+> the maintainer. They are not used for `unsafe` code or to change the core behaviour of
+> the library unless explicitly instructed. See [AGENTS.md](./AGENTS.md) for the rules
+> agents follow here.
 
 ## Quickstart
 
